@@ -1,0 +1,22 @@
+.flash-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color:#1C1C1E;
+  color: #16FF00;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 480px; /* 모바일 화면 크기 제한 */
+  
+  margin: 0 auto;
+  border: 1px solid #ddd; /* 테스트용 테두리 */
+  background-color: #1C1C1E;
+ 
+}
