@@ -13,8 +13,6 @@ import {ReactComponent as Heart} from "../asset/svgs/pagesmallht.svg"
 import {ReactComponent as Chat} from "../asset/svgs/Chat_alt_2 (1).svg"
 
  
-
-
 function Itempage() {
   const navigate = useNavigate();
 
