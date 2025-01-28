@@ -54,7 +54,7 @@ function SignIn() {
                         />
                     
                         <LoginButton type="submit">
-                          <Link to={'/main'} style={{ textDecoration: "none",color:'white'}}>
+                          <Link to={'/home'} style={{ textDecoration: "none",color:'white'}}>
                           로그인하기  
                           </Link> 
                         </LoginButton>

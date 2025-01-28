@@ -1,82 +1,125 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom';
+import React,{useState} from 'react'
 import styled from 'styled-components';
 import Footer from '../component/Footer'
-import eximg from '../asset/image/샌즈.jpg'
+import eximg0 from '../asset/image/샌즈.jpg'
+import eximg from '../asset/image/후드티.jpg'
+import eximg2 from '../asset/image/엄2.jpeg'
+import eximg3 from '../asset/image/엄3.jpeg'
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import {ReactComponent as Selling} from "../asset/svgs/sellingInpage.svg"
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import {ReactComponent as Time} from "../asset/svgs/Time.svg"
 import {ReactComponent as Eye} from "../asset/svgs/eye.svg"
 import {ReactComponent as Heart} from "../asset/svgs/pagesmallht.svg"
 import {ReactComponent as Chat} from "../asset/svgs/Chat_alt_2 (1).svg"
+import BackIcon from '../component/icons/BackIcon';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination } from "swiper/modules";
+import {ReactComponent as Cancle} from "../asset/svgs/Cancle.svg"
 
- 
+
+import 'swiper/css';
+import 'swiper/css/pagination';
+import Modal from 'react-modal';
+
 function Itempage() {
-  const navigate = useNavigate();
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
+  const images = [eximg, eximg2, eximg3];
 
-  const handleBack = () => {
-    navigate(-1); 
+  const openModal = (index) => {
+    setCurrentImgIndex(index);
+    setModalIsOpen(true);
   };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+  };
+
   return (
     <PageStyle>
-    <PageMain>
-     
-      <PageImgBox>
-        <BackIcon><ArrowBackIosIcon 
-        onClick={handleBack}/></BackIcon>
-        <EtcIcon><MoreVertIcon/></EtcIcon>
-        <SellingIcon><Selling/></SellingIcon>
-        <PageImg src={ eximg } alt=""/>
-      </PageImgBox>
-      <PageEtcBox>
-        <PageTitleBox><span style={{fontSize:'25px'}}>샌즈</span> 
-        </PageTitleBox>
-        <PageTextBox>
-          <Brief>와 샌즈</Brief>
-          <EtcBox>
-            <Upload><Time/>22:00</Upload>
-            <Liked><Heart/>14 </Liked>
-            <View><Eye/>56 </View>
-            <Chats><Chat/>5</Chats>
-          </EtcBox>
+      <PageMain>
+        <PageImgBox>
+          <BackIconBox><BackIcon/></BackIconBox>
+          <EtcIcon><MoreVertIcon/></EtcIcon>
+          <SellingIcon><Selling/></SellingIcon>
+          <StyledSwiper
+            pagination={{
+              dynamicBullets: true,
+            }}
+            modules={[Pagination]}
+          >
+            {images.map((img, index) => (
+              <SwiperSlide key={index} onClick={() => openModal(index)}>  
+                <PageImg src={img} alt={`Slide ${index + 1}`} />
+              </SwiperSlide>
+            ))}
+          </StyledSwiper>
+        </PageImgBox>
+        <PageEtcBox>
+          <PageTitleBox><span style={{fontSize:'25px'}}>샌즈</span></PageTitleBox>
+          <PageTextBox>
+            <Brief>와 샌즈</Brief>
+            <EtcBox>
+              <Upload><Time/>22:00</Upload>
+              <Liked><Heart/>14</Liked>
+              <View><Eye/>56</View>
+              <Chats><Chat/>5</Chats>
+            </EtcBox>
+          </PageTextBox>
+          <PriceBox>
+            <Price>{(32000).toLocaleString()}원</Price>
+            <DealButton>거래하기</DealButton>
+          </PriceBox>
+          <StoreBox>
+            <ProfileBox>
+              <Profile src={eximg0} alt=""/>
+            </ProfileBox>
+            <StoreName>준식의 상점</StoreName>
+            <div className='itempage-store-liked'>
+              <FavoriteBorderIcon />
+              <div className='tempage-store-liked-count'>6만</div>
+            </div>
+          </StoreBox>
+        </PageEtcBox>
+        <DescriptBox>제품설명</DescriptBox>
+      </PageMain>
+      <Footer/>
 
-        </PageTextBox>
-        <PriceBox> 
-          <Price>40,000원</Price>
-          <DealButton>거래하기 </DealButton>
-        </PriceBox>
-        
-        <StoreBox>
-          <ProfileBox>
-            <Profile src={ eximg } alt=""/>
-            
-          </ProfileBox>
-          <StoreName>
-            준식의 상점
-          </StoreName>
-          <div className='itempage-store-liked'>
-            <FavoriteBorderIcon />
-            <div className='tempage-store-liked-count'>6만</div>
-          </div>
-        </StoreBox>
-      
-      </PageEtcBox>
-
-      <DescriptBox>
-      제품설명
-      
-
-      </DescriptBox>
-      
-    </PageMain>
-    <Footer/>
+      <StyledModal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        contentLabel="Image Modal"
+        ariaHideApp={false}
+        style={{
+          overlay: { zIndex: 100 } 
+        }}
+       
+      >
+        <ModalContent>
+          <CloseButton onClick={closeModal}>Close</CloseButton>
+          <Swiper
+            pagination={{
+              dynamicBullets: true,
+            }}
+            modules={[Pagination]}
+            initialSlide={currentImgIndex}
+          >
+            {images.map((img, index) => (
+              <SwiperSlide key={index}>
+                <ModalImgBox>
+                  <ModalImg src={img} alt={`Modal Slide ${index + 1}`} />
+                </ModalImgBox>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </ModalContent>
+      </StyledModal>
     </PageStyle>
-  )
+  );
 }
 
-export default Itempage
+export default Itempage;
 
 const PageStyle=styled.div`
   height: 100vh;
@@ -93,6 +136,7 @@ const PageMain=styled.div`
   scrollbar-width: none;
   height:90%;
   
+  
 `
 const PageImgBox=styled.div`
   position: relative;
@@ -103,15 +147,15 @@ const PageImgBox=styled.div`
 const PageImg=styled.img`
   width: 100%;
   height: 100%;
-  object-fit:cover;
-  
+  object-fit: cover; /* 박스를 완전히 덮도록 크기 조절 */
 `
-const BackIcon=styled.svg`
+const BackIconBox=styled.div`
   position: absolute;
   top: 10px;
   left:15px;
   width: 12%;
   height: 12%;
+  z-index: 2;
 `
 const EtcIcon=styled.svg`
   position: absolute;
@@ -119,6 +163,7 @@ const EtcIcon=styled.svg`
   right: 0px;
   width: 12%;
   height: 12%;
+  z-index: 2;
 `
 const SellingIcon = styled.svg`
   position: absolute;
@@ -126,6 +171,7 @@ const SellingIcon = styled.svg`
   right:15px;
   width: 12%;
   height: 12%;
+  z-index: 2;
 `
 const PageEtcBox=styled.div`
   width: 100%;
@@ -148,6 +194,11 @@ const PageTextBox=styled.div`
 `
 const Brief=styled.div`
   font-size: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  overflow-x: scroll;
+  scrollbar-width: none;
 `
 const EtcBox=styled.div`
   width: 50%;
@@ -244,4 +295,61 @@ const DescriptBox=styled.div`
   color: #F4F4F4;
   font-size: 20px;
 
+`
+const StyledSwiper = styled(Swiper)`
+  width: 100%;
+  height: 100%;
+
+  .swiper-slide {
+    text-align: center;
+    font-size: 18px;
+    background: #fff;
+
+    /* Center slide text vertically */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .swiper-pagination {
+    bottom: 10px;
+  }
+`;
+
+const StyledModal = styled(Modal)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.8);
+  outline: none;
+  
+`;
+
+
+const ModalContent = styled.div`
+  background-color: #1C1C1E; 
+  padding-top:5%;
+  width: 100%;
+  max-width: 480px;
+  height: 100vh;
+  object-fit: contain;
+`;
+
+const CloseButton = styled(Cancle)`
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  margin-bottom: 20px;
+`;
+
+const ModalImgBox=styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  
+`
+const ModalImg=styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 박스를 완전히 덮도록 크기 조절 */
 `

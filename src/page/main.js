@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Header from "../component/Header";
+import CommonBox from "../style/CommonBox";
 import {ReactComponent as Filter} from "../asset/svgs/Filter_alt.svg"
-import {ReactComponent as Bell} from '../asset/svgs/Bell.svg'
 import {ReactComponent as Search} from '../asset/svgs/Search.svg'
 import Itemcard from "../component/Itemcard";
 import Footer from "../component/Footer";
+import AlertIcon from "../component/icons/AlertIcon";
+
 
 function App() {
 
   return (
-    <PageStyle>
-          <Header title={'홈'} leftIcon={<Search/>} rightIcon={<Bell/>}/>
-    
+    <CommonBox>
+      <PageStyle>
+          <Header title={'홈'} leftIcon={<Search/>} rightIcon={<AlertIcon/>}/>
           <PageFilter>
          
             <FilterDiv><Filter/>필터</FilterDiv>
@@ -23,35 +25,38 @@ function App() {
           </PageFilter>
           <AppMain>
               <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+              <Itemcard/>
+
+             
           </AppMain>
           
           <Footer/>
-    </PageStyle>
+      </PageStyle>
+    </CommonBox>
   );
 }
 
 export default App;
 
 const PageStyle = styled.div`
-  height: 100vh;
-  max-width: 480px;
-  margin: 0 auto;
-  border: 1px solid #ddd; 
-  background-color: #1C1C1E;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-`
-const Headers=styled.div`
-  background-color:#2C2C2E;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 20px;
-  height: 10%;
-`
-const HeaderElement=styled.div`
-  display: flex;
-  gap: 16px;
 `
 
 const PageFilter=styled.div`
@@ -59,7 +64,6 @@ const PageFilter=styled.div`
   gap:8px;
   display: flex;
   height: 5%;
-
 `
 const FilterDiv=styled.div`
   background-color: #17161B;

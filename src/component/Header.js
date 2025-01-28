@@ -51,9 +51,20 @@ const HeaderIcons = styled.div`
 `;
 
 const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; 
+  height: 100%;
 
 `;
 
 const HeaderRight = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; 
+  height: 100%;
+
    
 `;
