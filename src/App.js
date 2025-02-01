@@ -10,7 +10,7 @@ import './App.css'
 import useStore from './store/store';
 import Auction from './page/auction';
 import AuctionItemPage from './page/AuctionItemPage'
-
+import ScrollToTop from "./util/ScrollTop"
 
 
 function App() {
@@ -48,7 +48,7 @@ function App() {
   return (
     <div className="App">
       <GlobalStyle/>
-     
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<SplashScreen/>} />
         <Route path="/home" element={<Main/>} />

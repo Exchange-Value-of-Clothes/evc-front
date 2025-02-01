@@ -65,6 +65,10 @@ const FooterBox = styled.div`
   justify-content: space-around;
   align-items: center;
   width: 100%;
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
  
 `;
 

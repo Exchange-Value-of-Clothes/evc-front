@@ -42,7 +42,7 @@ function Itempage() {
         <PageImgBox>
           <BackIconBox><BackIcon/></BackIconBox>
           <EtcIcon><MoreVertIcon/></EtcIcon>
-          <SellingIcon><Selling/></SellingIcon>
+          <SellingIcon/>
           <StyledSwiper
             pagination={{
               dynamicBullets: true,
@@ -122,10 +122,10 @@ function Itempage() {
 export default Itempage;
 
 const PageStyle=styled.div`
-  height: 100vh;
+  height: 100dvh;
   max-width: 480px;
   margin: 0 auto;
-  border: 1px solid #ddd; 
+
   background-color: #1C1C1E;
 `
 const PageMain=styled.div`
@@ -147,7 +147,7 @@ const PageImgBox=styled.div`
 const PageImg=styled.img`
   width: 100%;
   height: 100%;
-  object-fit: cover; /* 박스를 완전히 덮도록 크기 조절 */
+  object-fit: cover; 
 `
 const BackIconBox=styled.div`
   position: absolute;
@@ -165,7 +165,7 @@ const EtcIcon=styled.svg`
   height: 12%;
   z-index: 2;
 `
-const SellingIcon = styled.svg`
+const SellingIcon = styled(Selling)`
   position: absolute;
   bottom: 10px;
   right:15px;
@@ -331,7 +331,7 @@ const ModalContent = styled.div`
   padding-top:5%;
   width: 100%;
   max-width: 480px;
-  height: 100vh;
+  height: 100dvh;
   object-fit: contain;
 `;
 
@@ -351,5 +351,5 @@ const ModalImgBox=styled.div`
 const ModalImg=styled.img`
   width: 100%;
   height: 100%;
-  object-fit: cover; /* 박스를 완전히 덮도록 크기 조절 */
+  object-fit: cover; 
 `

@@ -16,7 +16,6 @@
   max-width: 480px; /* 모바일 화면 크기 제한 */
   
   margin: 0 auto;
-  border: 1px solid #ddd; /* 테스트용 테두리 */
   background-color: #1C1C1E;
  
 }

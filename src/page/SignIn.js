@@ -4,11 +4,26 @@ import { Link } from 'react-router-dom';
 import {ReactComponent as Kakao} from '../asset/svgs/realkakao.svg'
 import {ReactComponent as Naver} from '../asset/svgs/realnaver.svg'
 import {ReactComponent as Google} from '../asset/svgs/realgoogle.svg'
+import { useMutation } from "@tanstack/react-query";
+import { logInApi } from "../api/authApi";
 
 function SignIn() {
         const [formData, setFormData] = useState({
-          username: '',
+          email: '',
           password: '',
+        });
+
+        const mutation = useMutation({
+          mutationFn: logInApi,
+          onSuccess: (data) => {
+            console.log("로그인 성공:", data);
+            localStorage.setItem('authenticationToken',JSON.stringify(data.authenticationToken))
+            alert("로그인 성공!");
+          },
+          onError: (error) => {
+            console.error("로그인 실패:", error);
+            alert("로그인 실패!");
+          },
         });
       
         const handleChange = (e) => {
@@ -19,7 +34,7 @@ function SignIn() {
         const handleSubmit = (e) => {
           e.preventDefault();
           console.log('Submitted:', formData);
-          // 로그인 처리 로직 추가 (ex. API 요청)
+          mutation.mutate(formData);
         };
     
       
@@ -30,13 +45,13 @@ function SignIn() {
             <LoginForm>
                 <LogoDiv> 의가교환 </LogoDiv>
                 <span style={{fontSize:'15px'}}>반가워요! 로그인을 위해 이메일과 비밀번호를 입력해주세요</span>
-                <InputGroup onClick={handleSubmit} >
+                <InputGroup>
                    
                         <EmailInput
                         type="text"
-                        id="username"
-                        name="username"
-                        value={formData.username}
+                        id="email"
+                        name="email"
+                        value={formData.email}
                         onChange={handleChange}
                         required
                         placeholder="이메일을 입력해주세요."
@@ -53,30 +68,20 @@ function SignIn() {
                         placeholder="비밀번호를 입력해주세요."
                         />
                     
-                        <LoginButton type="submit">
-                          <Link to={'/home'} style={{ textDecoration: "none",color:'white'}}>
+                        <LoginButton  type="submit" onClick={handleSubmit}>
                           로그인하기  
-                          </Link> 
+                        
                         </LoginButton>
                      
                 </InputGroup>
                 <span >소셜로 로그인하기</span>
                 <SocialDiv>
-                    <KakaoDiv>
-                        <Kakao />
+                    <SignInKakao/>
 
+                    <SignInNaver/>
 
-                    </KakaoDiv>
-                    <NaverDiv>
-                        <Naver style={{Color:'#00C73C'}}/>
-                     
-
-                    </NaverDiv>
-                    <GoogleDiv>
-                        <Google/>
-                
-
-                    </GoogleDiv>
+                    <SignInGoogle/>
+                      
                 </SocialDiv>
                 <Link to={'/signup'} style={{ textDecoration: "none",color:'white'}}>
                 <span >계정이 없으신가요? 회원가입 하러가기</span>  
@@ -93,10 +98,9 @@ export default SignIn
 
 const PageStyle = styled.div`
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   max-width: 480px;
   margin: 0 auto;
-  border: 1px solid #ddd; 
   background-color: #1C1C1E;
   display: flex;
   justify-content: center;
@@ -105,15 +109,17 @@ const PageStyle = styled.div`
 `
 const LoginContainer = styled.div`
   display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+
 `
 const LoginForm = styled.div`
   margin: 10px;
   background-color: #2C2C2E;
   width: 100%; 
-  min-width: 200px;
-  max-width: 400px;
-  height: 100%;
-  min-height: 500px;
+  height: 90%;
+  max-width: 480px;
   border-radius: 16px;
   padding: 16px;
   gap: 16px;
@@ -122,8 +128,8 @@ const LoginForm = styled.div`
   align-items: center;
 `
 const LogoDiv = styled.div`
-  width: 45%;
-  height: 20%;
+  width: 140px;
+  height: 100px;
   background-color:#212025;
   border-radius: 8px;
   display: flex;
@@ -138,18 +144,17 @@ const InputGroup =styled.div`
   justify-content: center;
   align-items: center;
   gap: 16px;
-  
+  margin: 10px;
 
 `
 const EmailInput = styled.input`
   width: 100%;
-  height: 100%;
   background-color: #212025;
   box-sizing: border-box;
   border-radius: 8px;
   border: none;
-  padding: 16px 10px;
-  font-size: large;   
+  padding: 16px 10px ;
+   
 
   &::placeholder{
     font-size: 14px;
@@ -160,13 +165,12 @@ const EmailInput = styled.input`
 `
 const PwForm =styled.input`
   width: 100%;
-  height: 100%;
   background-color: #212025;
   box-sizing: border-box;
   border-radius: 8px;
   border: none;
-  padding: 16px 10px 16px 10px;
-  font-size: large;
+  padding: 16px 10px;
+ 
 
   &::placeholder{
     font-size: 14px;
@@ -176,45 +180,41 @@ const PwForm =styled.input`
 `
 const LoginButton =styled.button`
   width: 100%;
-  height: 100%;
   background-color: #08AC72;
   box-sizing: border-box;
   border-radius: 8px;
   border: none;
-  padding: 16px 10px 16px 10px;
-  font-size: large;
- 
+  padding: 16px 10px;
 
 `
 const SocialDiv =styled.div`
-  width: 100%;
+  width: 90%;
   height: 11%;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
 
 `
-const KakaoDiv =styled.div`
-  border-radius: 8px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-`
-const NaverDiv =styled.div`
-
-  border-radius: 8px;
+const SignInKakao=styled(Kakao)`
  
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  border-radius: 8px;
+  width: 30%;
+  height: 100%;
+
 
 `
-const GoogleDiv=styled.div`
+const SignInNaver=styled(Naver)`
+
   border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 30%;
+  height: 100%;
+
+
+`
+const SignInGoogle=styled(Google)`
+
+  border-radius: 8px;
+  width: 30%;
+  height: 100%;
 
 
 `

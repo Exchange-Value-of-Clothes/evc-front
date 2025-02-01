@@ -4,16 +4,30 @@ import { Link } from 'react-router-dom';
 import{ReactComponent as Kakao} from '../asset/svgs/realkakao.svg'
 import {ReactComponent as Naver} from '../asset/svgs/realnaver.svg'
 import {ReactComponent as Google} from '../asset/svgs/realgoogle.svg'
+import { useMutation } from "@tanstack/react-query";
+import { registerApi } from "../api/authApi";
 
 function SignUp() {
   const [formData, setFormData] = useState({
-    useremail: '',
-    username: '',
+    email: '',
+    nickname: '',
     password: '',
-    pwcheck: '',
+    checkPassword: '',
   });
-  const [isEmailValid, setIsEmailValid] = useState(null);
-  /*const handleDuplicateCheck =(e)=>{}*/ 
+  // const [isSpecialState, setIsSpecialState] = useState(false); //미완성코드
+
+
+  const mutation = useMutation({
+    mutationFn:registerApi,
+    onSuccess: (data) => {
+      console.log("회원가입 성공:", data);
+      alert("회원가입 성공!");
+    },
+    onError: (error) => {
+      console.error("회원가입 실패:", error);
+      alert("회원가입 실패!");
+    },
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,12 +36,12 @@ function SignUp() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.password !== formData.pwcheck) {
+    if (formData.password !== formData.checkPassword) {
       alert('비밀번호가 일치하지 않습니다.');
       return;
     }
     console.log('Submitted:', formData);
-    // 로그인 처리 로직 추가 (ex. API 요청)
+    mutation.mutate(formData);
   };
 
 
@@ -42,8 +56,8 @@ return (
                       <SignupEmailDiv>
                         <SignupEmailInput
                         type="text"
-                        name="useremail"
-                        value={formData.useremail}
+                        name="email"
+                        value={formData.email}
                         onChange={handleChange}
                         required
                         placeholder="이메일을 입력해주세요."
@@ -51,13 +65,19 @@ return (
                         <DuplicateCheck>
                           중복확인
                         </DuplicateCheck>
-
+          
                       </SignupEmailDiv>
+                      {/* {isSpecialState && (
+                          
+                          <VerifyInput type="text" placeholder="이메일 인증" />
+                      
+                        )}   */}
+
           
                       <SignupNameInput
                       type="text"
-                      name="username"
-                      value={formData.username}
+                      name="nickname"
+                      value={formData.nickname}
                       onChange={handleChange}
                       required
                       placeholder="닉네임을 입력해주세요."
@@ -75,8 +95,8 @@ return (
                 
                       <SignupPwCheck
                       type="password"
-                      name="pwcheck"
-                      value={formData.pwcheck}
+                      name="checkPassword"
+                      value={formData.checkPassword}
                       onChange={handleChange}
                       required
                       placeholder="비밀번호를 확인해주세요"
@@ -88,11 +108,11 @@ return (
               </SignupInputGroup>
               <span >소셜로 회원가입하기</span>
               <SignupSocialDiv>
-                  <Signupkakao> <Kakao/> </Signupkakao>
+                  <Signupkakao/> 
                     
-                  <Signupnaver> <Naver/> </Signupnaver>
+                  <Signupnaver/> 
 
-                  <Signupgoogle> <Google/></Signupgoogle>
+                  <Signupgoogle/> 
               </SignupSocialDiv>
               <Link to={'/login'} style={{ textDecoration: "none",color:'white'}}>
                   <span >이미 계정이 있으신가요? 로그인 하러가기</span>  
@@ -108,10 +128,9 @@ export default SignUp
 
 const PageStyle = styled.div`
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   max-width: 480px;
   margin: 0 auto;
-  border: 1px solid #ddd; 
   background-color: #1C1C1E;
   display: flex;
   justify-content: center;
@@ -120,7 +139,9 @@ const PageStyle = styled.div`
 `
 const SignupContainer = styled.div`
   display: flex;
-  min-width: 100%;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 
 `
 const SignupForm =styled.div`
@@ -128,19 +149,18 @@ const SignupForm =styled.div`
   background-color: #2C2C2E;
   width: 100%;
   max-width: 480px;
-  height: 100%;
-  min-height: 600px;
+  height: 90%;
   border-radius: 16px;
   padding: 16px;
-  gap: 16px;
   display: flex;
+  gap:16px;
   flex-direction: column;
   align-items: center;
 
 `
 const SignupLogoDiv=styled.div`
-  width: 45%;
-  height: 35%;
+  width: 140px;
+  height: 100px;
   background-color:#212025;
   border-radius: 8px;
   display: flex;
@@ -154,15 +174,16 @@ const SignupInputGroup=styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 16px;
-
+  gap: 3%;
+  margin: 10px;
 `
 const SignupEmailDiv=styled.div`
   width: 100%;
   display: flex;
   justify-content: space-between;
   gap:5px;
-
+  height: 20%;
+  
 `
 const SignupEmailInput=styled.input`
   width: 100%;
@@ -173,113 +194,124 @@ const SignupEmailInput=styled.input`
   border-radius: 8px;
   border: none;
   padding: 16px 10px 16px 10px;
-  font-size: large; 
   &::placeholder{
-    font-size: 14px;
+   
     color: #F4F4F4;
   }
 
 `
+const VerifyInput=styled.input`
+  width: 100%;
+  height: 100%;
+  background-color: #212025;
+  box-sizing: border-box;
+
+  border-radius: 8px;
+  border: none;
+  padding: 16px 10px 16px 10px;
+  &::placeholder{
+   
+   color: #F4F4F4;
+ }
+
+`
+
 const DuplicateCheck=styled.button`
   background-color: #444448;
   border-radius: 8px;
   width: 35%;
   height: 100%;
   border: none;
-
+  
 
 `
 const SignupNameInput=styled.input`
   width: 100%;
-  height: 100%;
+  height: 20%;
   background-color: #212025;
   box-sizing: border-box;
 
   border-radius: 8px;
   border: none;
   padding: 16px 10px 16px 10px;
-  font-size: large; 
+
   &::placeholder{
-    font-size: 14px;
+  
     color: #F4F4F4;
   }
 
 `
 const SignupPwInput=styled.input`
   width: 100%;
-  height: 100%;
+  height: 20%;
   background-color: #212025;
   box-sizing: border-box;
 
   border-radius: 8px;
   border: none;
   padding: 16px 10px 16px 10px;
-  font-size: large;
+ 
   &::placeholder{
-    font-size: 14px;
+ 
     color: #F4F4F4;
   }
 
 `
 const SignupPwCheck=styled.input`
   width: 100%;
-  height: 100%;
+  height: 20%;
   background-color: #212025;
   box-sizing: border-box;
 
   border-radius: 8px;
   border: none;
   padding: 16px 10px 16px 10px;
-  font-size: large;
+
   &::placeholder{
-    font-size: 14px;
+
     color: #F4F4F4;
   }
 `
 const SignupButton=styled.button`
   width: 100%;
-  height: 100%;
+  height: 20%;
   background-color: #08AC72;
   box-sizing: border-box;
   border-radius: 8px;
   border: none;
-  padding: 16px 10px 16px 10px;
-  font-size: large;
+  padding: 15px 10px 15px 10px;
+  font-size: 90%;
 
 
 `
 const SignupSocialDiv=styled.div`
   width: 90%;
-  height: 20%;
+  height: 11%;
   
   display: flex;
   justify-content: space-between;
 
 `
-const Signupkakao=styled.div`
+const Signupkakao=styled(Kakao)`
  
   border-radius: 8px;
+  width: 30%;
+  height: 100%;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-`
-const Signupnaver=styled.div`
-
-  border-radius: 8px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
 
 `
-const Signupgoogle=styled.div`
+const Signupnaver=styled(Naver)`
 
   border-radius: 8px;
-;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 30%;
+  height: 100%;
+
+
+`
+const Signupgoogle=styled(Google)`
+
+  border-radius: 8px;
+  width: 30%;
+  height: 100%;
 
 `
