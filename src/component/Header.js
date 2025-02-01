@@ -19,10 +19,14 @@ export default Header
 
 Header.defaultProps = {
     leftIcon: null,  // 아이콘을 기본값으로 null로 설정
-    rightIcon: null, // 아이콘을 기본값으로 null로 설정
+    rightIcon: null,
   };
 
 const HeaderBox=styled.div`
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
     width: 100%;
     height: 6%;
     box-sizing: border-box;

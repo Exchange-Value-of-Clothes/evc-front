@@ -129,16 +129,11 @@ const PriceBox = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    overflow-x: scroll;
-    scrollbar-width: none;
  
 `
 const PriceType = styled.span`
     color: #919191;
-    font-size: 20%;
+    font-size: 80%;
 `
 const Price = styled.span`
     font-weight: 900;
