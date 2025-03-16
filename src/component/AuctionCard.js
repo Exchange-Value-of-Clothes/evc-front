@@ -9,7 +9,7 @@ import formatNumber from '../util/formatNumber';
 
 function AuctionCard() {
 
-
+    const price=100000
     const navigate = useNavigate();
   
     const handleCardClick = () => {
@@ -22,7 +22,7 @@ function AuctionCard() {
                 <Img src={eximg} alt=''/>
             </ImgBox>
             <StatusBox>
-                <span>제목</span>
+                <span style={{fontFamily:'NeoM,sans-serif'}}>제목</span>
                 <HeartIcon></HeartIcon>
                 <ParticipantsBox>
                     <ExSpan>108명 참여중</ExSpan>
@@ -34,15 +34,15 @@ function AuctionCard() {
             <PriceDiv>
                 <PriceBox>
                     <PriceType>호가 단위</PriceType>
-                    <Price>{formatNumber(100000)}원 </Price>
+                    <Price>{price > 100000 ? formatNumber(price) : (price).toLocaleString()}원 </Price>
                 </PriceBox>
                 <PriceBox>
                     <PriceType>시작 가격 </PriceType>
-                    <Price>{formatNumber(100000)}원 </Price>
+                    <Price>{price > 100000 ? formatNumber(price) : (price).toLocaleString()}원 </Price>
                 </PriceBox>
                 <PriceBox>
                     <PriceType>현재 가격 </PriceType>
-                    <Price> {formatNumber(100000)}원</Price>
+                    <Price> {price > 100000 ? formatNumber(price) : (price).toLocaleString()}원</Price>
                 </PriceBox>
             </PriceDiv>
             <RemainTimeDiv>
@@ -112,7 +112,9 @@ const BriefBox = styled.div`
     height: 7%;
 `
 const Brief = styled.span`
-    font-size: 90%;
+    font-size: 14px;
+    font-family: 'NeoM',sans-serif;
+
 `
 const PriceDiv = styled.div`
     width: 100%;
@@ -133,10 +135,14 @@ const PriceBox = styled.div`
 `
 const PriceType = styled.span`
     color: #919191;
-    font-size: 80%;
+    font-size: 12px;
+    font-family: 'NeoM',sans-serif;
+
 `
 const Price = styled.span`
-    font-weight: 900;
+    font-size: 16px;
+    font-family: 'NeoEB',sans-serif;
+
   
 `
 

@@ -1,6 +1,8 @@
 import axios from "axios";
+import userStore from '../store/userStore'
 
 const API_URL = process.env.REACT_APP_API_URL;
+const RandomStr = "cmakc2199r21ll1z"
 
 export const registerApi = async (userData) => {
   try {
@@ -9,11 +11,12 @@ export const registerApi = async (userData) => {
       url: `${API_URL}/api/members/register`,
       headers: { 
         "Content-Type": "application/json",
+        
       },
       data: userData, 
     });
 
-    console.log("회원가입 성공:", response);
+    console.log("회원가입 성공:", response.data);
     return response.data; 
   } catch (error) {
     console.error("회원가입 실패:", error);
@@ -22,6 +25,8 @@ export const registerApi = async (userData) => {
 };
 
 export const logInApi = async (userData)=>{
+    axios.defaults.withCredentials=true;
+  
     try{
         const res = await axios({
             method:'post',
@@ -38,3 +43,64 @@ export const logInApi = async (userData)=>{
         throw err;
     }
 }
+
+export const RequestCodeApi = async (userEmail)=>{
+  try{
+      const res = await axios({
+          method:'get',
+          url: `${API_URL}/api/members/register/request-code`,
+          params:{email:userEmail},
+        
+      });
+      console.log("인증코드 재요청 성공",res);
+      return res.data;
+  }catch(err){
+      console.error("인증코드 재요청 실패",err)
+      throw err;
+  }
+}
+
+export const refreshAccessToken = async ()=>{
+
+  try{
+      const res = await axios({
+          method:'post',
+          url: `${API_URL}/api/auth/refresh`,
+          headers:{
+            "Content-Type":  "application/json",
+         
+          },
+          withCredentials:true,
+       
+         
+      });
+      console.log("토큰재요청성공",res);
+      const { accessToken } = res.data;
+      userStore.getState().setAccessToken(accessToken);
+      return res.data;
+  }catch(err){
+      console.error("토큰재요청실패",err)
+      throw err;
+  }
+}
+
+export const socialLogin = async (social)=>{
+   
+  try{
+      const res = await axios({
+          method:'get',
+          url: `${API_URL}/api/auth/social`,
+          params:{
+            provider_type:social,
+            state: RandomStr,
+          } ,
+      });
+      console.log("소셜 로그인 요청 성공",res);
+      return res.data;
+  }catch(err){
+      console.error("소셜 로그인 요청 실패",err)
+      throw err;
+  }
+}
+
+

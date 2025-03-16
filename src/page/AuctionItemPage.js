@@ -1,4 +1,4 @@
-import React,{useState} from 'react'
+import React,{useState,useCallback} from 'react'
 import styled from 'styled-components';
 import Footer from '../component/Footer'
 import eximg0 from '../asset/image/샌즈.jpg'
@@ -15,6 +15,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from "swiper/modules";
 import Modal from 'react-modal';
 import {ReactComponent as Cancle} from "../asset/svgs/Cancle.svg"
+import AuctionModal from '../component/AuctionModal';
 
 
 import 'swiper/css';
@@ -23,6 +24,7 @@ import 'swiper/css/pagination';
  
 function Itempage() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [isOpen,setIsOpen]=useState(false);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const images = [eximg, eximg2, eximg3];
 
@@ -35,6 +37,11 @@ function Itempage() {
     setModalIsOpen(false);
   };
 
+  const setModal=useCallback(()=>{
+    
+      setIsOpen((prev)=>!prev);
+      
+    },[])
 
     return (
 
@@ -58,6 +65,7 @@ function Itempage() {
                         dynamicBullets: true,
                     }}
                     modules={[Pagination]}
+                    
                     >
                     {images.map((img, index) => (
                       <SwiperSlide key={index} onClick={() => openModal(index)}>  
@@ -70,7 +78,7 @@ function Itempage() {
                 <PageEtcBox>
 
                     <PageTitleBox>
-                        <span style={{fontSize:'25px'}}>샌즈</span> 
+                        <Titlespan style={{fontSize:'25px'}}>샌즈</Titlespan> 
                     </PageTitleBox>
 
                     <PageTextBox>
@@ -91,7 +99,7 @@ function Itempage() {
 
                     <Price>{
                     (32000).toLocaleString()}원</Price>
-                    <DealButton>거래하기 </DealButton>
+                  
                     
                     </PriceBox>
                     
@@ -104,10 +112,10 @@ function Itempage() {
                     <StoreName>
                         준식의 경매 
                     </StoreName>
-                    <div className='itempage-store-liked'>
+                    <LikeDiv >
                         <FavoriteBorderIcon />
-                        <div className='tempage-store-liked-count'>6만</div>
-                    </div>
+                        <div style={{fontSize:'12px',fontFamily:'NeoM,sans-serif'}}>6만</div>
+                    </LikeDiv>
 
                     </StoreBox>
                 
@@ -117,7 +125,7 @@ function Itempage() {
                     <Descript>
                         
 
-
+                        야호
 
                     </Descript>
                     
@@ -134,7 +142,7 @@ function Itempage() {
                             </CurrentPrice>
                         </BottomFirstBox>
                         <BottomSecondBox>
-                            <BuyButton>
+                            <BuyButton onClick={setModal}>
                                 경매하기
                             </BuyButton>
                         </BottomSecondBox>          
@@ -171,7 +179,10 @@ function Itempage() {
                         ))}
                       </Swiper>
                     </ModalContent>
-                  </StyledModal>
+            </StyledModal>
+            <AuctionModal isOpen={isOpen} close={setModal} />
+
+            
         </PageStyle>
     )
 }
@@ -198,12 +209,16 @@ const PageImgBox=styled.div`
   position: relative;
   width: 100%;
   height: 35%;
+  z-index: 0 !important;
   
 `
 const PageImg=styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover; 
+ 
+  
+
 `
 const BackIconBox=styled.div`
   position: absolute;
@@ -240,7 +255,11 @@ const PageTitleBox=styled.div`
   display: flex;
   justify-content: space-between;
   padding:15px;
-
+  
+`
+const Titlespan = styled.span`
+  font-family: 'NeoEB',sans-serif;
+  font-size: 20px;
 `
 const PageTextBox=styled.div`
   display: flex;
@@ -255,6 +274,8 @@ const Brief=styled.div`
   overflow: hidden;
   overflow-x: scroll;
   scrollbar-width: none;
+  font-family: 'NeoM',sans-serif;
+
 `
 const EtcBox=styled.div`
   width: 25%;
@@ -267,7 +288,7 @@ const Upload=styled.span`
   font-size: 12px;
   display: flex;
   gap: 3px;
-
+  font-family: 'NeoM',sans-serif;
 `
 
 const View=styled.span`
@@ -275,6 +296,7 @@ const View=styled.span`
  font-size: 12px;
  display: flex;
  gap: 3px;
+ font-family: 'NeoM',sans-serif;
 
 `
 
@@ -289,14 +311,7 @@ const PriceBox=styled.div`
 `
 const Price=styled.span`
   font-size: 20px;
-`
-const DealButton=styled.button`
-  color:#F4F4F4;
-  background-color: #444448;
-  border-radius: 8px;
-  width: 20%;
-  height: 100%;
-  border: none;
+  font-family: 'NeoEB',sans-serif;
 
 `
 const StoreBox=styled.div`
@@ -347,8 +362,11 @@ const DescriptBox=styled.div`
 
 `
 const StyledSwiper = styled(Swiper)`
+  position: relative;
   width: 100%;
   height: 100%;
+ 
+ 
 
   .swiper-slide {
     text-align: center;
@@ -359,7 +377,9 @@ const StyledSwiper = styled(Swiper)`
     display: flex;
     justify-content: center;
     align-items: center;
+  
   }
+ 
 
   .swiper-pagination {
     bottom: 10px;
@@ -369,12 +389,14 @@ const StyledSwiper = styled(Swiper)`
 const Descript=styled.span`
  padding: 16px;
  flex: 1;
+ font-family: 'NeoM',sans-serif;
+ font-size: 20px;
 `
 
 const RemainTimeDiv = styled.div`
     box-sizing: border-box;
     width: 100%;
-    height: 15dvh; 
+    height: 13dvh; 
     background-color: #2C2C2E;
     bottom: 0;
     flex-shrink: 0; 
@@ -402,15 +424,19 @@ const ElementBox = styled.div`
 const TimeIcon = styled(Time)`
     width: 10%;
     height :100%;
+  
 `;
 
 const RemainTime = styled.span`
-    font-size: 90%; 
+    font-size: 16px; 
+   
+    font-family: 'NeoM',sans-serif;
 `;
 
 const CurrentPrice = styled.span`
-    font-size: 90%; 
+    font-size: 16px;
     margin-top: 10px;
+    font-family: 'NeoEB',sans-serif;
 `;
 const BottomSecondBox =styled.div`
     height: 100%;
@@ -426,8 +452,9 @@ const BuyButton=styled.button`
     border-radius: 8px;
     border: none;
     background-color: #444448;
-    font-size: 80%;
-
+    font-size: 16px;
+    font-family: 'NeoM',sans-serif;
+    
 `
 const StyledModal = styled(Modal)`
   display: flex;
@@ -465,3 +492,11 @@ const ModalImg=styled.img`
   height: 100%;
   object-fit: cover; 
   `
+
+const LikeDiv = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+`

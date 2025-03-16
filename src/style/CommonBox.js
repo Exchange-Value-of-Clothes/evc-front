@@ -6,7 +6,7 @@ const CommonBox = styled.div`
     max-width: 480px;
     margin: 0 auto;
     background-color: #1C1C1E;
-
+   
    
 
 `
