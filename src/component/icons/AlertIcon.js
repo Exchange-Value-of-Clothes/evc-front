@@ -17,19 +17,6 @@ function AlertIcon() {
 
 export default AlertIcon
 
-const AlertButton = styled.div`
 
-    display: flex;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-`
-const Alert = styled.svg`
-   width: 10%; 
-   height: 10%;
-
-`
 
 

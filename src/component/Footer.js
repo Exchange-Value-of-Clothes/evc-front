@@ -34,24 +34,23 @@ function Footer() {
   };
 
   return (
-
     <FooterBox>
-      <AuctionBox to="/auction" style={{ textDecoration: "none" }} isActive={currentPage === '/auction'}>
-          {getIcon('auction')}경매장
+      <AuctionBox to="/auction" $isActive={currentPage === '/auction'}>
+        {getIcon('auction')}경매장
       </AuctionBox>
-      <RegisterBox to="/register" style={{ textDecoration: "none" }} isActive={currentPage === '/register'}>
-          {getIcon('register')}등록
+      <RegisterBox to="/register" $isActive={currentPage === '/register'}>
+        {getIcon('register')}등록
       </RegisterBox>
-      <HomeBox to="/home" style={{ textDecoration: "none" }} isActive={currentPage === '/home'}>
-          {getIcon('home')}홈
+      <HomeBox to="/home" $isActive={currentPage === '/home'}>
+        {getIcon('home')}홈
       </HomeBox>
-      <ChatBox to="/chat" style={{ textDecoration: "none" }} isActive={currentPage === '/chat'}>
-          {getIcon('chat')}채팅
+      <ChatBox to="/chat" $isActive={currentPage === '/chat'}>
+        {getIcon('chat')}채팅
       </ChatBox>
-      <MypageBox to="/mypage" style={{ textDecoration: "none" }} isActive={currentPage === '/mypage'}>
-          {getIcon('mypage')}마이 페이지
+      <MypageBox to="/mypage" $isActive={currentPage === '/mypage'}>
+        {getIcon('mypage')}마이 페이지
       </MypageBox>
-  </FooterBox>
+    </FooterBox>
   );
 }
 
@@ -69,28 +68,29 @@ const FooterBox = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
- 
 `;
 
 const LinkBox = styled(Link)`
-  color: ${(props) => (props.isActive ? '#16FF00' : '#F4F4F4')};
+  color: ${(props) => (props.$isActive ? '#16FF00' : '#F4F4F4')};
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 80%;
   width: 20%;
-  
+  text-decoration: none;
   @media (max-width: 400px) {
     font-size: 70%;
   }
 `;
 
-const AuctionBox = styled(LinkBox)``;
-const RegisterBox = styled(LinkBox)``;
-const HomeBox = styled(LinkBox)``;
-const ChatBox = styled(LinkBox)``;
-const MypageBox = styled(LinkBox)``;
-
-
-
+const AuctionBox = styled(LinkBox)`  font-family: 'NeoM',sans-serif;
+`;
+const RegisterBox = styled(LinkBox)`  font-family: 'NeoM',sans-serif;
+`;
+const HomeBox = styled(LinkBox)`  font-family: 'NeoM',sans-serif;
+`;
+const ChatBox = styled(LinkBox)`  font-family: 'NeoM',sans-serif;
+`;
+const MypageBox = styled(LinkBox)`  font-family: 'NeoM',sans-serif;
+`;

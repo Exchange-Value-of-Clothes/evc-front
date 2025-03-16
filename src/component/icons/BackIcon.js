@@ -1,5 +1,5 @@
 import React from 'react'
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import {ReactComponent as BackArrow} from "../../asset/svgs/Back.svg"
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -11,27 +11,12 @@ function BackIcon() {
 
     }
   return (
-    <BackButton onClick={handleBack}>
-       <Back><ArrowBackIosIcon/></Back>
-    </BackButton>
+      <BackArrow  onClick={handleBack}/>
   )
 }
 
 export default BackIcon
 
-const BackButton = styled.button`
-    border: none;
-    background: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-`
-const Back = styled.svg`
-    width: 100%;
-    height: 100%;
 
-`
 
 

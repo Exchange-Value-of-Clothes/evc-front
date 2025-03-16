@@ -1,32 +1,28 @@
 import React from 'react'
-
+import { refreshAccessToken } from "../../api/authApi"
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import {ReactComponent as Search} from '../../asset/svgs/Search.svg'
+
 
 function SearchIcon() {
- 
+  const click = async()=>{
+    console.log("요청드가자")
+
+   await refreshAccessToken();
+  }
   return (
-    <SearchButton>
-       <Search> </Search>
-    </SearchButton>
+    
+    <SearchIcons onClick={click}> </SearchIcons>
+  
   )
 }
 
 export default SearchIcon
 
-const SearchButton = styled.button`
-    border: none;
-    background: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-`
-const Search = styled.svg`
-    width: 100%;
-    height: 100%;
 
+const SearchIcons = styled(Search)`
+   
 `
 
 

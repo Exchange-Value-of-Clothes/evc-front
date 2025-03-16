@@ -1,13 +1,9 @@
-import React,{useState} from 'react'
+import React,{useEffect, useState} from 'react'
+import { useParams,useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import Footer from '../component/Footer'
 import eximg0 from '../asset/image/샌즈.jpg'
-import eximg from '../asset/image/후드티.jpg'
-import eximg2 from '../asset/image/엄2.jpeg'
-import eximg3 from '../asset/image/엄3.jpeg'
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import {ReactComponent as Selling} from "../asset/svgs/sellingInpage.svg"
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import {ReactComponent as Time} from "../asset/svgs/Time.svg"
 import {ReactComponent as Eye} from "../asset/svgs/eye.svg"
 import {ReactComponent as Heart} from "../asset/svgs/pagesmallht.svg"
@@ -16,7 +12,12 @@ import BackIcon from '../component/icons/BackIcon';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from "swiper/modules";
 import {ReactComponent as Cancle} from "../asset/svgs/Cancle.svg"
-
+import { getSpecUsedItem } from '../api/ItemApi';
+import { formatDistanceToNow } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import {ReactComponent as Report} from "../asset/svgs/Report.svg"
+import { createRoom } from '../api/chatApi';
+import {connectToRoom} from '../hook/useChat'
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -25,7 +26,29 @@ import Modal from 'react-modal';
 function Itempage() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
-  const images = [eximg, eximg2, eximg3];
+  const [items,setItems]=useState(null);
+  const [loading, setLoading] = useState(true); // 로딩 상태 추가
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+
+  useEffect(() => {
+    console.log(id);
+    fetchItem();
+    
+  }, [id]);
+
+  const fetchItem = async () => {
+    try {
+      const data = await getSpecUsedItem(id); // 아이템 데이터 가져오기
+      setItems(data); // 데이터 상태 업데이트
+  
+      setLoading(false); // 로딩 상태 업데이트
+    } catch (error) {
+      console.error("아이템 정보를 가져오는 데 실패했습니다.", error);
+      setLoading(false); // 로딩 상태 업데이트
+    }
+  };
 
   const openModal = (index) => {
     setCurrentImgIndex(index);
@@ -36,12 +59,41 @@ function Itempage() {
     setModalIsOpen(false);
   };
 
+  const formatTimeAgo = (date) => {
+    const parsedDate = new Date(date);
+    return formatDistanceToNow(parsedDate, { addSuffix: true, locale: ko }); // '30초 전' 형식으로 변환
+  };
+
+  
+  const createRoomEvent = async (itemId, memberId) => {
+    try {
+      const roomData = await createRoom(itemId, memberId);
+  
+      if (!roomData || !roomData.chatRoomId) {
+        throw new Error("유효한 채팅방 ID를 받지 못했습니다.");
+      }
+  
+      console.log("채팅방 생성 성공:", roomData);
+  
+      const roomId = roomData.chatRoomId;
+  
+      navigate(`/chat/rooms/${roomId}`);
+  
+    } catch (err) {
+      console.error("채팅방 생성 실패:", err);
+    }
+  };
+  
+
+  if (loading) {
+    return <div>로딩 중...</div>; // 로딩 페이지 표시
+  }
   return (
     <PageStyle>
       <PageMain>
         <PageImgBox>
           <BackIconBox><BackIcon/></BackIconBox>
-          <EtcIcon><MoreVertIcon/></EtcIcon>
+          <EtcIcon><Report/></EtcIcon>
           <SellingIcon/>
           <StyledSwiper
             pagination={{
@@ -49,7 +101,7 @@ function Itempage() {
             }}
             modules={[Pagination]}
           >
-            {images.map((img, index) => (
+            {items.imageURLs&&items.imageURLs.map((img, index) => (
               <SwiperSlide key={index} onClick={() => openModal(index)}>  
                 <PageImg src={img} alt={`Slide ${index + 1}`} />
               </SwiperSlide>
@@ -57,32 +109,35 @@ function Itempage() {
           </StyledSwiper>
         </PageImgBox>
         <PageEtcBox>
-          <PageTitleBox><span style={{fontSize:'25px'}}>샌즈</span></PageTitleBox>
+          <PageTitleBox><span style={{fontSize:'25px'}}>{items.title}</span></PageTitleBox>
           <PageTextBox>
-            <Brief>와 샌즈</Brief>
+            <Brief></Brief>
             <EtcBox>
-              <Upload><Time/>22:00</Upload>
-              <Liked><Heart/>14</Liked>
-              <View><Eye/>56</View>
-              <Chats><Chat/>5</Chats>
+              <Upload><Time/>{formatTimeAgo(items.createAt)}</Upload>
+              <Liked><Heart/>{items.likeCount}</Liked>
+              <View><Eye/>{items.viewCount}</View>
+              <Chats><Chat/>{items.chattingCount}</Chats>
             </EtcBox>
           </PageTextBox>
           <PriceBox>
-            <Price>{(32000).toLocaleString()}원</Price>
-            <DealButton>거래하기</DealButton>
+            <Price>{(items.price).toLocaleString()}원</Price>
+            <DealButton
+            disabled={items?.isOwned}
+            onClick={() => createRoomEvent(id,items.memberId)}
+            >거래하기</DealButton>
           </PriceBox>
           <StoreBox>
             <ProfileBox>
               <Profile src={eximg0} alt=""/>
             </ProfileBox>
-            <StoreName>준식의 상점</StoreName>
-            <div className='itempage-store-liked'>
-              <FavoriteBorderIcon />
-              <div className='tempage-store-liked-count'>6만</div>
-            </div>
+            <StoreName>{items.nickName}의 상점</StoreName>
+            <StorelikedDiv>
+               {/*<FavoriteBorderIcon />
+             <div className='tempage-store-liked-count' style={{fontSize:'12px',fontFamily:'NeoM,sans-serif'}}>6만</div>*/}
+            </StorelikedDiv>
           </StoreBox>
         </PageEtcBox>
-        <DescriptBox>제품설명</DescriptBox>
+        <DescriptBox>{items.content}</DescriptBox>
       </PageMain>
       <Footer/>
 
@@ -105,7 +160,7 @@ function Itempage() {
             modules={[Pagination]}
             initialSlide={currentImgIndex}
           >
-            {images.map((img, index) => (
+            {items.imageURLs&&items.imageURLs.map((img, index) => (
               <SwiperSlide key={index}>
                 <ModalImgBox>
                   <ModalImg src={img} alt={`Modal Slide ${index + 1}`} />
@@ -157,12 +212,11 @@ const BackIconBox=styled.div`
   height: 12%;
   z-index: 2;
 `
-const EtcIcon=styled.svg`
+const EtcIcon=styled.div`
   position: absolute;
   top: 10px;
-  right: 0px;
-  width: 12%;
-  height: 12%;
+  right: 15px;
+ 
   z-index: 2;
 `
 const SellingIcon = styled(Selling)`
@@ -184,7 +238,8 @@ const PageTitleBox=styled.div`
   display: flex;
   justify-content: space-between;
   padding:15px;
-
+  font-family: 'NeoEB',sans-serif;
+  font-size: 20px;
 `
 const PageTextBox=styled.div`
   display: flex;
@@ -199,11 +254,13 @@ const Brief=styled.div`
   overflow: hidden;
   overflow-x: scroll;
   scrollbar-width: none;
+  font-family: 'NeoEB',sans-serif;
+ 
 `
 const EtcBox=styled.div`
-  width: 50%;
+  width: 40%;
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-between;
 
 `
 const Upload=styled.span`
@@ -211,6 +268,7 @@ const Upload=styled.span`
   font-size: 12px;
   display: flex;
   gap: 3px;
+  font-family: 'NeoM',sans-serif;
 
 `
 const Liked=styled.span`
@@ -218,6 +276,7 @@ const Liked=styled.span`
   font-size: 12px;
   display: flex;
   gap: 3px;
+  font-family: 'NeoM',sans-serif;
 
 `
 const View=styled.span`
@@ -225,6 +284,7 @@ const View=styled.span`
  font-size: 12px;
  display: flex;
  gap: 3px;
+ font-family: 'NeoM',sans-serif;
 
 `
 const Chats=styled.span`
@@ -232,19 +292,22 @@ const Chats=styled.span`
  font-size: 12px;
  display: flex;
   gap: 3px;
+  font-family: 'NeoM',sans-serif;
 
 `
 
 const PriceBox=styled.div`
   display: flex;
+  align-items: center;
   justify-content: space-between;
   padding: 0 16px;
   margin-top: 10px;
-  
   height: 17%;
 `
 const Price=styled.span`
   font-size: 20px;
+  font-family: 'NeoEB',sans-serif;
+
 `
 const DealButton=styled.button`
   color:#F4F4F4;
@@ -253,6 +316,8 @@ const DealButton=styled.button`
   width: 20%;
   height: 100%;
   border: none;
+  font-family: 'NeoM',sans-serif;
+  font-size: 16px;
 
 `
 const StoreBox=styled.div`
@@ -284,7 +349,7 @@ const Profile=styled.img`
 
 `
 const StoreName=styled.div`
-
+  font-size: 18px;
   font-size: 18px;
   color: #F4F4F4;
   margin-right:40%;
@@ -293,8 +358,8 @@ const StoreName=styled.div`
 const DescriptBox=styled.div`
   padding: 16px;
   color: #F4F4F4;
-  font-size: 20px;
-
+  font-size: 16px;
+  font-family: 'NeoM',sans-serif;
 `
 const StyledSwiper = styled(Swiper)`
   width: 100%;
@@ -352,4 +417,11 @@ const ModalImg=styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover; 
+`
+const StorelikedDiv=styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
 `

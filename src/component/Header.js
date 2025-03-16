@@ -28,7 +28,7 @@ const HeaderBox=styled.div`
     left: 0;
     right: 0;
     width: 100%;
-    height: 6%;
+    height: 56px;
     box-sizing: border-box;
     background-color:#2C2C2E;
     padding: 15px 20px;

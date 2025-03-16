@@ -1,19 +1,18 @@
 import React from 'react'
 import styled from 'styled-components'
-import {ReactComponent as Auction} from "../asset/svgs/auction.svg"
 
 
-function AlertCard() {
+function AlertCard({icon, title, text}) {
   return (
     <CardBox>
-        <IconBox> <Auction/> </IconBox>
+        <IconBox> {icon} </IconBox>
         <TextBox>
-            <TitleDiv>경매장 </TitleDiv>
-            <TextDiv> 회원님이 찜하신 품목이 아직 판매중이에요!</TextDiv>
+            <TitleDiv>{title}</TitleDiv>
+            <TextDiv> {text}</TextDiv>
             <More> 더보기</More>
         </TextBox>
     </CardBox>
-  )
+  ) 
 }
 
 export default AlertCard
@@ -40,15 +39,19 @@ flex-direction: column;
 width: 85%;
 height: 100%;
 gap: 15px;
-
+padding: 3px;
+padding-right: 10%;
 `
 const TitleDiv = styled.div`
-
+  font-family: 'NeoM',sans-serif;
 `
 const TextDiv = styled.div`
+  font-family: 'NeoM',sans-serif;
 
 `
 const More=styled.div`
     font-size: 12px;
     color: #919191;
+    font-family: 'NeoM',sans-serif;
+
 `

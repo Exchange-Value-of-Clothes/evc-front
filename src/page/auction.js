@@ -1,22 +1,33 @@
-import React from 'react'
+import React,{useState,useCallback} from 'react'
 import styled from 'styled-components'
 import CommonBox from '../style/CommonBox'
 import Footer from '../component/Footer'
 import Header from '../component/Header'
+import useFilterIconStore from '../store/filterIconStore';
+
 import {ReactComponent as PointPlus} from '../asset/svgs/PointPlus.svg'
 import AlertIcon from '../component/icons/AlertIcon'
 import {ReactComponent as Filter} from "../asset/svgs/Filter_alt.svg"
 import {ReactComponent as Search} from '../asset/svgs/Search.svg'
+
 import AuctionCard from '../component/AuctionCard'
+import CategoryModal from '../component/CategoryModal'
 
 function Auction() {
+  const { selectedIcon, selectButton, resetSelection } = useFilterIconStore();
+  
+  const [isOpen,setIsOpen]=useState(false);
+
+  const setModal=useCallback(()=>{
+    setIsOpen((prev)=>!prev);
+  },[])
   return (
     <CommonBox>
         <PageStyle>
             <Header title={'홈'} leftIcon={<Search/>} rightIcon={<AlertIcon/>}/>
             <PageFilter>
-                <FilterDiv><Filter/>필터</FilterDiv>
-                <RemainPointBox>잔여단추<RemainPoin>{(23000000000).toLocaleString()}</RemainPoin><PointPlus/></RemainPointBox>
+                <FilterDiv onClick={setModal}><Filter/>필터</FilterDiv>
+                <RemainPointBox>잔여단추<RemainPoin>{(23000000).toLocaleString()}</RemainPoin><PointPlus/></RemainPointBox>
             </PageFilter>
             <AppMain>
                 <AuctionCard/>
@@ -32,6 +43,11 @@ function Auction() {
         
                 
             </AppMain>
+              <CategoryModal 
+              isOpen={isOpen} close={setModal}
+              selectedIcon={selectedIcon}
+              selectButton={selectButton}
+              resetSelection={resetSelection} />
             <Footer/>
         </PageStyle>
     </CommonBox>
@@ -75,6 +91,8 @@ const FilterDiv=styled.div`
   justify-content: center;
   width: 18%;
   height: 100%;
+  font-family: 'NeoM',sans-serif;
+
 
 `
 const RemainPointBox=styled.div`
@@ -87,11 +105,13 @@ const RemainPointBox=styled.div`
     height: 80%;
     margin-right: 2%;
     font-size: 80%;
-  
+    font-family: 'NeoEB',sans-serif;
+
 `
 const RemainPoin=styled.span`
     overflow-x: scroll;
     scrollbar-width: none;
     width: 40%;
+    font-family: 'NeoM',sans-serif;
 
 `
