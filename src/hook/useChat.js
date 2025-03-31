@@ -6,12 +6,13 @@ const WS_URL =process.env.REACT_APP_WS_URL;
 
 let socket;
 export const connectToRoom = async (roomId) => {
-  let accessToken = userStore.getState().accessToken?.accessToken;
+  let accessToken = userStore.getState().accessToken;
+  console.log("채팅토큰있나요?",accessToken)
 
   if (!accessToken) {
     console.error('Access token is missing!');
-    await refreshAccessToken(); // 토큰 갱신 기다리기
-    accessToken = userStore.getState().accessToken?.accessToken;
+    accessToken = await refreshAccessToken(); // 토큰 갱신 기다리기
+    console.log("돌아온토큰",accessToken)
     if (!accessToken) {
       console.error('Access token is still missing after refresh!');
       return; // 갱신이 안 됐으면 종료

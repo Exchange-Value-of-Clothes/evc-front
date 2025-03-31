@@ -1,0 +1,72 @@
+@font-face {
+    font-family: 'NeoB';
+    src: url('./NeoB.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+
+    }
+@font-face {
+    font-family: 'NeoEB';
+    src: url('./NeoEB.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+
+}
+@font-face {
+    font-family: 'NeoH';
+    src: url('./NeoH.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+
+}
+@font-face {
+    font-family: 'NeoL';
+    src: url('./NeoL.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+
+}
+@font-face {
+    font-family: 'NeoM';
+    src: url('./NeoM.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+
+}
+@font-face {
+    font-family: 'NeoR';
+    src: url('./NeoR.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+
+    }
+@font-face {
+    font-family: 'NeoSB';
+    src: url('./NeoSB.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+
+}
+@font-face {
+    font-family: 'NeoT';
+    src: url('./NeoT.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+
+}
+@font-face {
+    font-family: 'NeoUL';
+    src: url('./NeoUL.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+
+}

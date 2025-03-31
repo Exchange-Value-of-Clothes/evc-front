@@ -60,4 +60,19 @@ export const joinRoom = async(RoomId,date_cursor)=>{
     }
 };
 
+export const exitRoom = async(RoomId)=>{
+    try{
+        const res = await api({
+            method: "patch",
+            url: `/api/chat/${RoomId}/exit`,
+            withCredentials:true,
+
+           
+        })
+        console.log('방퇴장',res)
+        return res.data;
+    }catch(err){
+        console.err('퇴장실패.',err);
+    }
+};
 

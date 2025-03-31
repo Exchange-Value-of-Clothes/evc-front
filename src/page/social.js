@@ -1,19 +1,39 @@
-import React, { useEffect } from 'react'
-import {refreshAccessToken} from '../api/authApi'
+import React, { useEffect } from 'react';
+import { refreshAccessToken } from '../api/authApi';
+import { useNavigate } from 'react-router-dom';
+import userStore from '../store/userStore';
 
 function Social() {
-  useEffect(()=>{
-    console.log("소셜성공")
+  const navigate = useNavigate();
+  const { setAccessToken } = userStore();
 
-    if (window.location.pathname === "/social-login-success"){
-      console.log("찾앗다")
-      refreshAccessToken()
+  useEffect(() => {
+    const fetchAccessToken = async () => {
+      console.log("소셜성공");
 
-    }
-  },[]);
-  return (
-    <div>social</div>
-  )
+      if (window.location.pathname === "/social-login-success") {
+        console.log("찾았다");
+
+        try {
+          const data = await refreshAccessToken();
+          console.log(data);
+
+          localStorage.setItem('LoginState', true);
+          const { accessToken } = data;
+          console.log(accessToken);
+          
+          setAccessToken(accessToken);
+          navigate('/home',accessToken);
+        } catch (error) {
+          console.error("토큰 갱신 실패:", error);
+        }
+      }
+    };
+
+    fetchAccessToken();
+  }, [navigate, setAccessToken]);
+
+  return <div>social</div>;
 }
 
-export default Social
+export default Social;

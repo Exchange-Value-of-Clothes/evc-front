@@ -1,11 +1,24 @@
-import React from 'react'
+import React,{useState} from 'react'
 import ReactDom from "react-dom";
+import { useNavigate, } from 'react-router-dom';
 import Modal from 'react-modal';
 import styled from 'styled-components';
 import {ReactComponent as BackArrow} from "../asset/svgs/Back.svg"
+import { payApi } from '../api/payApi';
 
 const PointAddModal=({isOpen,close})=> {
+    const navigate =useNavigate();
+    const [point,setPoint] = useState(0);
     const modalRoot = document.getElementById('portal');
+    const handlePointChange = (e) => {
+      setPoint(e.target.value); // 입력값을 point 상태에 저장
+    };
+  
+    const handleNavigate = () => {
+      // navigate 시 point 값을 state로 전달
+      navigate('/payment', { state: { point } });
+    };
+  
 
     return ReactDom.createPortal(
         <StyleModal isOpen={isOpen} onRequestClose={close} style={{
@@ -17,19 +30,23 @@ const PointAddModal=({isOpen,close})=> {
                 <Span0>{'포인트 추가'}</Span0> 
             </ModalHeader>
             <ContentDiv>
-              <PointInput placeholder='얼마나 충전할까요?'/>
+              <PointInput 
+              placeholder='얼마나 충전할까요?'
+              value={point}
+              onChange={handlePointChange}
+              />
               <Sdiv>
               <CurrentPoint>현재 보유량 {(230000).toLocaleString()}</CurrentPoint>
               </Sdiv>
               <Buttons>
-                <Button5000>5000 단추</Button5000>
-                <Button10000>10000 단추</Button10000>
-                <Button50000>50000 단추</Button50000>
+                <Button5000 onClick={() => setPoint(prevPoint => prevPoint +5000)}>5000 단추</Button5000>
+                <Button10000 onClick={() => setPoint(prevPoint => prevPoint +10000)}>10000 단추</Button10000>
+                <Button50000 onClick={() => setPoint(prevPoint => prevPoint +50000)}>50000 단추</Button50000>
               </Buttons>
         
             </ContentDiv>
             <ButtonDiv>
-            <Button2>추가하기</Button2>
+            <Button2 onClick={handleNavigate}>추가하기</Button2>
               
             </ButtonDiv>
             

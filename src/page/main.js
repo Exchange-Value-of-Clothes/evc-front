@@ -14,6 +14,7 @@ import {getUsedItem} from "../api/ItemApi"
 import { useInView } from "react-intersection-observer";
 import userStore from '../store/userStore'
 
+
 function App() {
   const location=useLocation();
   const {filters,setFilter}=usePageFilterStore();
@@ -21,7 +22,7 @@ function App() {
   const selectedFilter = filters[currentPage];
   const navigate=useNavigate();
   const [items, setItems] = useState([]);
-  const [page,setPage] = useState(0);
+  const [cursor, setCursor] = useState(null); 
   const {ref,inView}=useInView({
     threshold: 0.5,
   });
@@ -29,14 +30,25 @@ function App() {
   const accesstoken = userStore(state=>state.accessToken)
   const fetchItems = async () => {
     try {
-      const data = await getUsedItem(page); 
-      if (data.isLast) {
-        setIsLast(true);  
+      const data = await getUsedItem(cursor); 
+      if (data && Array.isArray(data.content)) {
+        console.log("아이템 배열:", data.content);
+        setCursor(data.cursor); 
+        if (!data.hasNext) {
+          setIsLast(true);  // 마지막 페이지인지 여부 설정
+        }
+        
+        // 기존 아이템에 새로 받은 아이템 추가
+        setItems((prevItems) => [
+          ...prevItems,
+          ...data.content,  // 응답에서 받은 아이템 추가
+        ]);
+        // 배열 처리 로직
+      } else {
+        console.error("loadUsedItemDetails는 배열이 아닙니다.", data);
       }
-      setItems((prevItems) => [
-        ...prevItems, 
-        ...data.loadUsedItemDetails, 
-      ]);
+      
+      
       console.log(items)
     } catch (error) {
       console.error("아이템 데이터를 가져오는 데 실패했습니다:", error);
@@ -55,11 +67,9 @@ function App() {
   useEffect(() => {
     if (inView && !isLast) {
       console.log("다음 페이지 요청");
-
-      setPage((prevPage) => prevPage + 1); 
       fetchItems();
     }
-  }, [inView, isLast]);  
+  }, [inView, isLast]); 
 
 
   return (
@@ -74,7 +84,7 @@ function App() {
           <AppMain>
           {items.length > 0 ? (
             items.map(item => (
-              <Itemcard key={item.id} item={item} /> 
+              <Itemcard key={item.id} item={item} imgName={item.imageName} /> 
             ))
           ) : (
             <p>아이템이 없습니다.</p> 

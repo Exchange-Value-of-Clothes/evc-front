@@ -1,4 +1,4 @@
-import React, { useState ,useEffect} from 'react';
+import React, { useState ,useEffect,useRef} from 'react';
 import styled from 'styled-components';
 import CommonBox from "../style/CommonBox";
 import BackIcon from '../component/icons/BackIcon';
@@ -11,17 +11,28 @@ import { ReactComponent as Upload } from "../asset/svgs/Upload.svg";
 import { ReactComponent as Album } from "../asset/svgs/Album.svg";
 import { ReactComponent as Label } from "../asset/svgs/Label.svg";
 import Message from '../component/Message';
-import { useParams } from "react-router-dom";
+import { useParams,useLocation } from "react-router-dom";
 import {connectToRoom,sendMessage} from '../hook/useChat'
+import {joinRoom} from '../api/chatApi'
 
 
 function ChattingPage() {
   const { roomId } = useParams();
+  const { state } = useLocation(); // navigate로 전달된 state를 받음
+  const [roomData, setRoomData] = useState(state?.roomData || null);
+
   const [stompClient, setStompClient] = useState(null);
   const [message, setMessage] = useState(''); // 단일 메시지를 관리하는 상태로 변경
   const [messages, setMessages] = useState([]); // 수신된 메시지를 관리하는 배열
   const [isExpanded, setIsExpanded] = useState(false); // 상태 변수로 MessageDiv 펼쳐짐 여부 관리
   const [connectionStatus, setConnectionStatus] = useState('connecting');
+  
+  
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [roomData,messages]); 
 
   // 버튼 클릭 시 펼침/접힘 토글
   const handleAddClick = () => {
@@ -36,16 +47,58 @@ function ChattingPage() {
   // 엔터 키로 메시지 전송
   const handleSendMessage = (e) => {
     if (e.key === 'Enter' && message.trim()) {
-      setMessages((prevMessages) => [...prevMessages, { user: 'me', msg: message }]); // 메시지를 배열에 추가
-      sendMessage(stompClient, message); // 메시지 전송
-      setMessage(''); // 전송 후 입력란 초기화
+      const timestamp = new Date().toISOString(); // 현재 시간을 ISO 형식으로 저장
+  
+      const newMessage = {
+        user: 'me',
+        msg: message,
+        createdAt: timestamp, // 클라이언트에서만 사용할 타임스탬프
+      };
+  
+      setMessages((prevMessages) => [...prevMessages, newMessage]); // UI 업데이트
+      sendMessage(stompClient, message); // 서버로는 메시지만 전송
+      setMessage(''); // 입력란 초기화
     }
   };
+  
 
   
 useEffect(() => {
   if (!roomId) return;
+  console.log('Room data:', roomData);
 
+  const fetchAdditionalRooms = async () => {
+    try {
+      let newRoomData = { ...roomData };
+
+      while (newRoomData.hasNext) {
+        console.log('🔄 hasNext가 true이므로 joinRoom 실행:', newRoomData.cursor);
+
+        // 추가 데이터 요청
+        const additionalData = await joinRoom(roomId, newRoomData.cursor);
+
+        if (!additionalData || !additionalData.content) {
+          console.error('❌ 추가 데이터가 없습니다!');
+          break;
+        }
+
+        // 기존 roomData에 새로운 데이터 추가
+        newRoomData = {
+          ...newRoomData,
+          content: [...newRoomData.content, ...additionalData.content],
+          cursor: additionalData.cursor,
+          hasNext: additionalData.hasNext,
+        };
+
+        setRoomData(newRoomData);
+      }
+    } catch (error) {
+      console.error('❌ 추가 데이터 가져오기 실패:', error);
+    }
+  };
+
+  fetchAdditionalRooms();
+ 
   const initStompClient = async () => {
     try {
       const client = await connectToRoom(roomId);
@@ -87,13 +140,22 @@ useEffect(() => {
         </ProfileBox>
 
         <AppMain>
-          <Chatting>
-            {messages.map((message, index) => (
-              <MessageList key={index} user={message.user}>
-                <Message user={message.user} msg={message.msg} />
+        <Chatting>
+          {
+            roomData.content.slice().reverse().map((message, index) => (
+              <MessageList key={index} user={message.isMine ? 'me' : 'other'}>
+                <Message user={message.isMine ? 'me' : 'other'} msg={message.message} time={String(message.createdAt)} />
               </MessageList>
-            ))}
-          </Chatting>
+            ))
+          }
+          {messages.map((message, index) => (
+            <MessageList key={index} user={message.user}>
+              <Message user={message.user} msg={message.msg} time={message.createdAt} />
+            </MessageList>
+          ))}
+          <div ref={bottomRef} /> 
+        </Chatting>
+
         </AppMain>
 
         <MessageDiv isExpanded={isExpanded}>
@@ -143,6 +205,7 @@ const AppMain = styled.div`
   flex-direction: column;
   scrollbar-width: none;
   gap: 1px;
+  margin-bottom: 15px;
  
   
 `;
@@ -211,7 +274,7 @@ const MessageDiv = styled.div`
   transition: height 0.3s ease; 
   z-index: 3;
   overflow: hidden;  
-
+  
 `;
 
 const MessageInput = styled.input`
@@ -251,10 +314,11 @@ const Chatting = styled.div`
 
 `
 const MessageList=styled.div`
+    min-height: 40px;
     width: 100%;
     display: flex;
     justify-content: ${({ user }) => (user ==='me' ? 'flex-end' : 'flex-start')}; 
-
+    margin-bottom: 15px;
 `
 
 const MessageContent = styled.div`

@@ -32,7 +32,7 @@ const CategoryModal = ({ isOpen, close, selectedIcon, selectButton, resetSelecti
   ];
 
   return (
-    <StyleModal isOpen={isOpen} onRequestClose={close}>
+    <StyleModal isOpen={isOpen} onRequestClose={close}  appElement={document.getElementById('root')}>
       <ModalContents>
         <ModalHeader>
           <BackArrow onClick={close} />
