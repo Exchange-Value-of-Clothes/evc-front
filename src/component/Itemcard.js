@@ -6,13 +6,20 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
 
-function Itemcard({item, extraIcon, onClick }) {
+
+function Itemcard({item,imgName, extraIcon, onClick }) {
  
     const navigate = useNavigate();
   
     const handleCardClick = () => {
       navigate(`/item/${item.usedItemId}`); // 
+      console.log('이미지주소',IMG_URL+item.imageName)
+      console.log("IMG_URL:", IMG_URL); 
+      console.log("전체 환경 변수:", process.env);
+    
+
     }
     const formatTimeAgo=(date)=> {
       
@@ -23,7 +30,7 @@ function Itemcard({item, extraIcon, onClick }) {
     return (
       <ItemCard onClick={handleCardClick}>
         <CardImgBox>
-          <CardImg src={item.imageURLs[0] || 'default_image_url.jpg'} alt={item.title} /> {/* 이미지 URL을 item에서 받아오기 */}
+          <CardImg src={`${IMG_URL}/${encodeURIComponent(imgName)}` || 'default_image_url.jpg'} alt={item.title} /> 
           {item.transactionStatue==="RESERVE"&& (
             <Overlay>
               <OverlayText>예약 중</OverlayText>

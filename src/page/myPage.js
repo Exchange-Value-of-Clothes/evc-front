@@ -10,15 +10,24 @@ import {ReactComponent as Card} from "../asset/svgs/Creditcard.svg"
 import {ReactComponent as Bill} from "../asset/svgs/Bill.svg"
 import {ReactComponent as Ht} from "../asset/svgs/MyPageHt.svg"
 import {ReactComponent as Boxes} from "../asset/svgs/Boxes.svg"
-import { Link } from 'react-router-dom';
+import { Link ,useNavigate} from 'react-router-dom';
 import { useState,useCallback } from 'react';
 import PointReturnModal from '../component/PointReturnModal'
+import PointAddModal from '../component/PointAddModal'
 
 function MyPage() {
+    const navigate = useNavigate();
+
     const [openReturn,setOpenReturn]=useState(false);
     const setModalReturn=useCallback(()=>{
         
         setOpenReturn((prev)=>!prev);
+            
+    },[])
+    const [openAdd,setOpenAdd]=useState(false);
+    const setModalAdd=useCallback(()=>{
+        
+        setOpenAdd((prev)=>!prev);
             
     },[])
   
@@ -46,7 +55,7 @@ function MyPage() {
                     <Point><span style={{fontSize:'20px'}}>{(50000).toLocaleString()}</span></Point>
                     <ButtonDiv>
                         <AccountButton > 계좌 관리  </AccountButton>
-                        <ChargeButton> 충전하기 </ChargeButton>
+                        <ChargeButton onClick={setModalAdd}> 충전하기 </ChargeButton>
                         <RefundButton onClick={setModalReturn}> 환급하기 </RefundButton>
                     </ButtonDiv>
                 </PointBox>
@@ -85,6 +94,9 @@ function MyPage() {
             <PointReturnModal  isOpen={openReturn} close={setModalReturn}
        
             ></PointReturnModal>
+            <PointAddModal isOpen={openAdd} close={setModalAdd}>
+
+            </PointAddModal>
            <Footer/>
         </PageStyle>
     </CommonBox>

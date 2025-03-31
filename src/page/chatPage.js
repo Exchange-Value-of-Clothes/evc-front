@@ -9,7 +9,7 @@ import Filter from '../component/Filter';
 import { useLocation,useNavigate } from 'react-router-dom';
 import usePageFilterStore from '../store/filterStore';
 import { useSwipeable } from 'react-swipeable';
-import {getRooms,joinRoom} from '../api/chatApi'
+import {getRooms,joinRoom,exitRoom} from '../api/chatApi'
 
 
 function ChatPage() {
@@ -28,10 +28,10 @@ function ChatPage() {
   const handleCardClick = async (roomId) => {
     try {
       // 방에 입장
-      await joinRoom(roomId,cursor);  // joinRoom API 호출
+      const roomData = await joinRoom(roomId); // joinRoom API 호출
 
-      // 입장 성공 후 해당 방으로 이동
-      navigate(`/chat/rooms/${roomId}`);
+    // 방에 입장 후, 상태와 함께 방으로 이동
+      navigate(`/chat/rooms/${roomId}`, { state: { roomData } });
     } catch (err) {
       console.error("❌ 방 입장 실패:", err);
       setError("Failed to join the room");
@@ -40,6 +40,11 @@ function ChatPage() {
   useEffect(() => {
     fetchRooms();
   }, []);
+
+  useEffect(() => {
+    console.log("📌 cursor 업데이트됨:", cursor);
+  }, [cursor]);
+  
 
   const fetchRooms = async () => {
     try {
@@ -58,7 +63,9 @@ function ChatPage() {
       }));
 
       setRooms(roomsWithSwipeState);
-      setCursor(response.content.cursor);
+      setCursor(response.cursor);
+      console.log("📌 setCursor 호출됨, 새로운 값:", response.cursor);
+
       console.log("✅ rooms 상태 업데이트:", roomsWithSwipeState);
     } catch (err) {
       console.error("❌ 방 목록 조회 실패:", err);
@@ -86,18 +93,23 @@ function ChatPage() {
 
   const handleDelete = (id) => {
     setRooms((prevRooms) => prevRooms.filter((room) => room.chatRoomId !== id));
+    exitRoom(id);
   };
 
   return (
     <CommonBox>
       <PageStyle>
         <Header2 title={'채팅'} icon={<BackIcon />} />
+        
         <Filter
           filterShape={'ham'}
           addAuc={true}
           selectedFilter={selectedFilter}
-          setSelectedFilter={(val) => setFilter(currentPage, val)}
+          setSelectedFilter={(val) => {
+            if (selectedFilter !== val) setFilter(currentPage, val);
+          }}
         />
+
         <AppMain>
           {rooms.map((room) => (
             <SwipeableChatCard

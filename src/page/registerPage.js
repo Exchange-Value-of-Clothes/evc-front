@@ -1,4 +1,5 @@
 import React,{useState,useCallback,useRef,useEffect } from 'react'
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components'
 import CommonBox from "../style/CommonBox";
 import {ReactComponent as Cancle} from "../asset/svgs/Cancle.svg"
@@ -7,11 +8,12 @@ import Footer from '../component/Footer';
 import {ReactComponent as Registerimg} from "../asset/svgs/Register_img.svg"
 import {ReactComponent as Rightarrow} from "../asset/svgs/Rightarrow.svg"
 import TypeButton from '../component/TypeButton';
-import {registerApi} from "../api/ItemApi"
+import {registerApi,postImg,s3Img} from "../api/ItemApi"
 import { deleteDatabase,saveFormToDB,getFormFromDB } from '../util/imageTemp';
 import CategoryModal from '../component/CategoryModal'
 
 function RegisterPage() {
+  const navigate = useNavigate();
   const [selectedImages, setSelectedImages] = useState([]); 
   const [imagesToUpload, setImagesToUpload] = useState([]); 
   const thumbnailInput = useRef();
@@ -22,6 +24,7 @@ function RegisterPage() {
     price:'',
     transactionType: '',
     transactionMode: '',
+    imageNames:[],
   });
 
   const selectButton = (category) => {
@@ -51,38 +54,43 @@ function RegisterPage() {
     getFormFromDB().then((data) => {
       if (data) {
         const tempSaveResult = window.confirm("임시저장내역을 불러올까요?");
-        if(tempSaveResult){
-        console.log("임시내역 복구")
-        setFormData(data.formData); 
-        setSelectedImages(data.images.map((img) => img.dataURL)); 
-        setImagesToUpload(data.images.map((img) => {
-
-          const mimeType = img.dataURL.includes("jpeg") ? "image/jpeg" : "image/png";
-          
-
-          const base64Data = img.dataURL.split(',')[1]; 
-          
-          const byteCharacters = atob(base64Data); 
-          const byteArrays = [];
-
-          for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
-            const byteArray = new Uint8Array(Math.min(1024, byteCharacters.length - offset));
-            for (let i = 0; i < byteArray.length; i++) {
-              byteArray[i] = byteCharacters.charCodeAt(offset + i);
-            }
-            byteArrays.push(byteArray);
-          }
-
-          const blob = new Blob(byteArrays, { type: mimeType });
-
-          const file = new File([blob], img.name, { type: mimeType });
-
-          console.log("생성된 이미지 파일:", file);
-
-          return file; 
-        }));
-         
-        }else{
+        if (tempSaveResult) {
+          console.log("임시내역 복구");
+          setFormData(data.formData);
+          setSelectedImages(data.images.map((img) => img.dataURL));
+    
+          setImagesToUpload(
+            data.images
+              .filter((img) => {
+                const allowedExtensions = ["jpg", "jpeg", "png"];
+                const extension = img.name.split(".").pop().toLowerCase();
+                return allowedExtensions.includes(extension);
+              })
+              .map((img) => {
+                const mimeType = img.name.endsWith("jpeg") || img.name.endsWith("jpg")
+                  ? "image/jpeg"
+                  : "image/png";
+    
+                const base64Data = img.dataURL.split(",")[1];
+                const byteCharacters = atob(base64Data);
+                const byteArrays = [];
+    
+                for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+                  const byteArray = new Uint8Array(Math.min(1024, byteCharacters.length - offset));
+                  for (let i = 0; i < byteArray.length; i++) {
+                    byteArray[i] = byteCharacters.charCodeAt(offset + i);
+                  }
+                  byteArrays.push(byteArray);
+                }
+    
+                const blob = new Blob(byteArrays, { type: mimeType });
+                const file = new File([blob], img.name, { type: mimeType });
+    
+                console.log("생성된 이미지 파일:", file);
+                return file;
+              })
+          );
+        } else {
           console.log("임시내역삭제");
           deleteDatabase();
         }
@@ -106,31 +114,39 @@ function RegisterPage() {
 
   const handleImageChange = (e) => {
     const files = e.target.files;
+    for (let file of files) {
+      const fileType = file.type;
+      if (!['image/jpeg', 'image/png','image/jpg'].includes(fileType)) {
+        alert('허용되지 않는 파일 형식입니다.');
+        return;
+      }
+      // 이미지 처리 로직 계속
+    }
     const fileArray = Array.from(files); 
     const imageUrls = fileArray.map((file) => URL.createObjectURL(file)); // 각 파일의 미리보기 URL 생성
     setImagesToUpload((prevFiles) => [...prevFiles, ...fileArray]);
     setSelectedImages((prevImages) => [...prevImages, ...imageUrls]);
+    
   };
 
   const handleIconClick = () => {
     thumbnailInput.current.click(); 
   };
-   // 거래 유형 선택  (택배거래/직거래)
-  const handleType = useCallback((val) => {
-    
-    setFormData((prev) => ({
-      ...prev,
-      transactionMode: prev.transactionMode === val ? '' : val,
-    }));
-  }, []);
+  // 거래 유형 선택 (택배거래/직거래)
+const handleType = useCallback((val) => {
+  setFormData((prev) => ({
+    ...prev,
+    transactionMode: prev.transactionMode === val ? '' : val,
+  }));
+}, []);
 
-  // 거래 방식 선택 (구매/판매/경매)
-  const handleKind = useCallback((val) => {
-    setFormData((prev) => ({
-      ...prev,
-      transactionType: prev.transactionType === val ? '' : val,
-    }));
-  }, []);
+// 거래 방식 선택 (구매/판매/경매)
+const handleKind = useCallback((val) => {
+  setFormData((prev) => ({
+    ...prev,
+    transactionType: prev.transactionType === val ? '' : val,
+  }));
+}, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -150,7 +166,6 @@ function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
   
     if (!isFormFilled) {
       alert("모든 폼을 입력해주세요!");
@@ -161,38 +176,55 @@ function RegisterPage() {
       alert("이미지를 하나 이상 업로드해주세요!");
       return;
     }
-    const formDataToSend = new FormData();
-
-    formDataToSend.append("createUsedItemRequest",
-      new Blob([JSON.stringify(formData)], { type: "application/json" }));
-
-   
-    imagesToUpload.forEach((file) => {
-      formDataToSend.append("imageFiles", file);
-    });
-
-    for (let [key, value] of formDataToSend.entries()) { //내용출력용 for문
-      console.log(key, value); 
-      if (value instanceof Blob) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          console.log(`파일 데이터: ${e.target.result}`); 
-        };
-        reader.readAsText(value); 
-      }
-    }
-    
   
     try {
-      registerApi(formDataToSend);
+      // Step 1: 이미지 S3 업로드 (리스트 형태로 전달)
+      const imageNames = imagesToUpload.map(img => img.name);
+      console.log("내용", imagesToUpload);
+      console.log("이름", imageNames);
+    
+      const uploadedImageUrls = await postImg('useditem', imageNames); 
+
+      console.log(" 서버에서줌",uploadedImageUrls[0].imageName)
+
+      const imageNames2 = uploadedImageUrls.map(uploadedImageUrls => uploadedImageUrls.imageName); //서버에서준이름
+      console.log("이미지네임들2",imageNames2)
+    
+      // 업로드된 이미지와 원본 파일을 매칭하여 `s3Img` 호출
+      uploadedImageUrls.forEach(({  presignedURL }, index) => {
+        // 원본 파일 (imagesToUpload에서 인덱스로 가져오기)
+        const file = imagesToUpload[index];
+    
+        // 파일명 추출 (S3 경로에서 마지막 `/` 이후 문자열)
+       
+        // 확장자 추출 (마지막 `.` 이후 문자열)
+        const fileType = file.type.split('.').pop(); 
+        //타입이 jpg jpeg png아니면 튕기는기능 넣기
+        console.log("S3 이미지 정보:", { url: presignedURL, type: fileType, file });
+    
+        // s3Img 함수 호출
+        s3Img(presignedURL, fileType, file); //현재 콜스에러뜨는중
+      });
+    
+      // Step 2: 폼 데이터 구성 (S3에서 받은 이미지 URL 추가)
+      const dataToSend = {
+        ...formData,
+        imageNames: imageNames2, // 새로운 필드 추가
+      };
+    
+      console.log("보내는 데이터:", dataToSend);
+    
+      // Step 3: 최종 API 요청 (application/json 형식으로 보내기)
+      const res = await registerApi(dataToSend); // 데이터를 JSON 형식으로 보내기
       alert("상품이 성공적으로 등록되었습니다!");
+      navigate('/home')
     } catch (err) {
       console.error("등록 실패", err);
       alert("등록 중 오류가 발생했습니다.");
     }
-    console.log('Submitted:', formDataToSend);
+    
+};
 
-  };
  
   return (
     <CommonBox>

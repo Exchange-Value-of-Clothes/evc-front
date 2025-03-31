@@ -1,8 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import eximg from '../asset/image/샌즈.jpg'
+import {formatTime} from '../util/formatTime'
 
-function Message({user,msg}) {
+
+function Message({user,msg,time}) {
   return (
     <MessageForm isMe={user==='me'}>
         {user!=='me'&&
@@ -18,7 +20,7 @@ function Message({user,msg}) {
             <IsRead isMe={user === 'me'}>
                 1
             </IsRead>
-            <SendTime isMe={user === 'me'}>{'오후 11:29'}</SendTime>
+            <SendTime isMe={user === 'me'}>{formatTime(time)}</SendTime>
         </SendTimeDiv>
         
     </MessageForm>

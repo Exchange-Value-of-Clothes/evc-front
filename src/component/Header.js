@@ -48,6 +48,8 @@ const HeaderContent = styled.div`
 
 const HeaderTitle = styled.div`
   font-size: 20px;
+  font-family: 'NeoSB',sans-serif;
+
 `;
 const HeaderIcons = styled.div`
     display: flex;

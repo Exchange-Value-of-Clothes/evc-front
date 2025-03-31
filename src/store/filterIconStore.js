@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { devtools } from 'zustand/middleware';
 
 const useFilterIconStore=create(
-    devtools(
+ 
         (set)=>({
            selectedIcon:[],
            selectButton:(IconName)=>
@@ -16,7 +16,7 @@ const useFilterIconStore=create(
 
            }),
            resetSelection:()=>set({selectedIcon:[]}),
-        }))
+        })
 );
 
 export default useFilterIconStore;

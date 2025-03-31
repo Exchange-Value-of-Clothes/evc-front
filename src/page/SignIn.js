@@ -25,9 +25,9 @@ function SignIn() {
             console.log("로그인 성공:", data);
             alert("로그인 성공!");
             localStorage.setItem('LoginState',true);
-            const { accessToken } = data
+            const  accessToken  = data.accessToken
             console.log(accessToken)
-            setAccessToken(data);
+            setAccessToken(accessToken);
             axios.defaults.headers.common['Authorization']=`Bearer ${accessToken}`;
             navigate('/home');
             

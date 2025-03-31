@@ -28,8 +28,8 @@ function SignUp() {
   const mutation = useMutation({
     mutationFn:registerApi,
     onSuccess: (data) => {
-      console.log("회원가입 성공:", data);
-      alert("회원가입 성공!");
+      console.log("회원가입요청 성공:", data);
+      alert("인증메일을 확인후 로그인해주세요!");
       //navigate('/login');
     },
     onError: (error) => {

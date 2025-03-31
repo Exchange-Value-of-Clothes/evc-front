@@ -3,15 +3,14 @@ import api from "./intercept";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-export const registerApi = async (formData) => {
+
+export const registerApi = async (datas) => {
     try {
         const res = await api({
             method: "post",
             url: `/api/useditems`,
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
-            data: formData,
+           
+            data: datas,
             withCredentials: true,
         });
 
@@ -29,18 +28,18 @@ export const registerApi = async (formData) => {
     }
 };
 
-export const getUsedItem = async (page) => {
+export const getUsedItem = async (cursors) => {
     try {
-        const res = await axios({
+        const res = await api({
             method: "get",
             url: `${API_URL}/api/useditems`,
             withCredentials: true,
             params:{
-                page:page,
+                cursor:cursors,
             }
         });
 
-        console.log(`${page}페이지 조회성공`, res);
+        console.log(`$페이지 조회성공`, res);
         return res.data;
     } catch (err) {
         console.error("조회실패", err);
@@ -61,6 +60,54 @@ export const getSpecUsedItem = async (itemId) => {
         return res.data;
     } catch (err) {
         console.error("조회실패", err);
+        throw err;
+    }
+};
+
+export const postImg = async (imgPath, imgs) => {
+    try {
+        
+
+        const res = await api({
+            method: "post",
+            url: `/api/images`,
+            withCredentials: true,
+         
+        
+            data:{
+                prefix: imgPath,
+                imageNames:imgs,
+            },
+        });
+
+        console.log(`이미지 이름 전송 완료`, res);
+        return res.data;
+    } catch (err) {
+        console.log("보낸거",imgs)
+        console.error("이미지 이름 전송 실패", err);
+        throw err;
+    }
+};
+
+export const s3Img = async (signedUrl,type,file)=>{
+    try {
+        const res = await axios({
+            method: "put",
+            url: signedUrl,
+            withCredentials: true,
+            headers: {
+                'Content-Type': type, 
+                Authorization: undefined,
+              },
+            data:file,
+        });
+
+        console.log(`이미지 S3 전송 완료`, res);
+        return res.data;
+    } catch (err) {
+        console.log("url",signedUrl,"타입",type,"파일",file)
+        console.error('S3 Upload Error:', err.response?.data || err.message);
+
         throw err;
     }
 };

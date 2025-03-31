@@ -75,7 +75,8 @@ export const refreshAccessToken = async ()=>{
          
       });
       console.log("토큰재요청성공",res);
-      const { accessToken } = res.data;
+      console.log("재요청해서 돌아온 토큰",res.data.accessToken)
+      const  accessToken  = res.data.accessToken;
       userStore.getState().setAccessToken(accessToken);
       return res.data;
   }catch(err){

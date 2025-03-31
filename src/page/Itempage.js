@@ -23,6 +23,8 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import Modal from 'react-modal';
 
+const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
+
 function Itempage() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
@@ -77,7 +79,9 @@ function Itempage() {
   
       const roomId = roomData.chatRoomId;
   
-      navigate(`/chat/rooms/${roomId}`);
+      
+      navigate(`/chat/rooms/${roomId}`, { state: { roomData } });
+
   
     } catch (err) {
       console.error("채팅방 생성 실패:", err);
@@ -101,9 +105,9 @@ function Itempage() {
             }}
             modules={[Pagination]}
           >
-            {items.imageURLs&&items.imageURLs.map((img, index) => (
+            {items.imageNames&&items.imageNames.map((img, index) => (
               <SwiperSlide key={index} onClick={() => openModal(index)}>  
-                <PageImg src={img} alt={`Slide ${index + 1}`} />
+                <PageImg src={`${IMG_URL}/${img}`} alt={`Slide ${index + 1}`} />
               </SwiperSlide>
             ))}
           </StyledSwiper>
@@ -123,18 +127,15 @@ function Itempage() {
             <Price>{(items.price).toLocaleString()}원</Price>
             <DealButton
             disabled={items?.isOwned}
-            onClick={() => createRoomEvent(id,items.memberId)}
+            onClick={() => createRoomEvent(id,items.marketMemberId)}
             >거래하기</DealButton>
           </PriceBox>
           <StoreBox>
             <ProfileBox>
               <Profile src={eximg0} alt=""/>
             </ProfileBox>
-            <StoreName>{items.nickName}의 상점</StoreName>
-            <StorelikedDiv>
-               {/*<FavoriteBorderIcon />
-             <div className='tempage-store-liked-count' style={{fontSize:'12px',fontFamily:'NeoM,sans-serif'}}>6만</div>*/}
-            </StorelikedDiv>
+            <StoreName>{items.marketNickname}의 상점</StoreName>
+           
           </StoreBox>
         </PageEtcBox>
         <DescriptBox>{items.content}</DescriptBox>
@@ -160,10 +161,10 @@ function Itempage() {
             modules={[Pagination]}
             initialSlide={currentImgIndex}
           >
-            {items.imageURLs&&items.imageURLs.map((img, index) => (
+            {items.imageNames&&items.imageNames.map((img, index) => (
               <SwiperSlide key={index}>
                 <ModalImgBox>
-                  <ModalImg src={img} alt={`Modal Slide ${index + 1}`} />
+                  <ModalImg src={`${IMG_URL}/${img}`} alt={`Modal Slide ${index + 1}`} />
                 </ModalImgBox>
               </SwiperSlide>
             ))}
@@ -328,7 +329,7 @@ const StoreBox=styled.div`
   height: 20%;
   border-radius:8px;
   display: flex;
-  justify-content: space-between;
+  gap: 5%;
 
 `
 const ProfileBox=styled.div`

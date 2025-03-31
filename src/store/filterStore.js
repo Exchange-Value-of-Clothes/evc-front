@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { devtools, persist } from 'zustand/middleware';
 
 const usePageFilterStore = create(
-    devtools(
+    
         persist(
             (set)=>({
                 filters:{},
@@ -15,7 +15,7 @@ const usePageFilterStore = create(
                     name:"filter-storage",
                 }
         )
-    )
+    
 );
 
 export default usePageFilterStore;

@@ -22,7 +22,8 @@ import PasswordPage from './page/PasswordPage';
 import ChattingPage from './page/ChattingPage';
 import Social from './page/social';
 import {ReactComponent as EvcbigLogo} from './asset/svgs/Evc_bigLogo.svg'
-
+import PaymentPage from './page/payPage';
+import PaySuccess from './page/paySuccess';
 
 function App() {
   const location = useLocation();
@@ -77,9 +78,11 @@ function App() {
         <Route path="/transhistory" element={<TransHistory/>} />
         <Route path="/watchlist" element={<WatchList/>} />
         <Route path="/profilesetting" element={<ProfileSetting/>} />
-        <Route path="/passwordpage" element={<PasswordPage/>} />        <Route path="/passwordpage" element={<PasswordPage/>} />
-        <Route path="/chat/rooms/:roomId" element={<ChattingPage/>} />        <Route path="/passwordpage" element={<PasswordPage/>} />
-        <Route path="/social-login-success" element={<Social/>} />        <Route path="/passwordpage" element={<PasswordPage/>} />
+        <Route path="/passwordpage" element={<PasswordPage/>} />        
+        <Route path="/chat/rooms/:roomId" element={<ChattingPage/>} />       
+        <Route path="/social-login-success" element={<Social/>} />       
+        <Route path="/payment" element={<PaymentPage/>} />
+        <Route path="/paySuccess" element={<PaySuccess/>} />
 
        </Routes>
 
