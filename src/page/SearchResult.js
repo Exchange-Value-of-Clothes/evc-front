@@ -8,16 +8,17 @@ import Itemcard from "../component/Itemcard";
 import Footer from "../component/Footer";
 import AlertIcon from "../component/icons/AlertIcon";
 import Filter from "../component/Filter";
-import { useLocation,useNavigate } from "react-router-dom";
+import { useLocation,useNavigate,useSearchParams } from "react-router-dom";
 import usePageFilterStore from '../store/filterStore';
 import SearchIcon from "../component/icons/SearchIcon";
-import {getUsedItem} from "../api/ItemApi"
+import {searchApi} from "../api/ItemApi"
 import { useInView } from "react-intersection-observer";
 import userStore from '../store/userStore'
 
-
-
-function App() {
+function SearchResult() {
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [params] = useSearchParams();
+  const query = params.get('query');
   const [isExpanded, setIsExpanded] = useState(false); 
   const location = useLocation();
   const { filters, setFilter } = usePageFilterStore();
@@ -35,18 +36,51 @@ function App() {
   // ✅ 필터별 스크롤 위치 저장용 ref
   const scrollPositionsRef = useRef({});
   const appMainRef = useRef(null);
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      const existing = JSON.parse(localStorage.getItem("searchHistory") || "[]");
 
-    if (!existing.includes(text)) {
-      const updated = [text, ...existing]; // 새 검색어를 맨 앞에 추가
+  const fetchSearchResults = async () => {
+    if (!query) return;
+    setIsFetching(true);
+    try {
+      const data = await searchApi(query,cursor); // 응답 형식이 { content, cursor, hasNext } 라고 가정
+      if (data && Array.isArray(data.content)) {
+        setItems(data.content);         // 기존 아이템 대체
+        setCursor(data.cursor || null); // 커서 저장 (다음 요청 위해)
+        setIsLast(!data.hasNext);       // 다음 페이지 없음 여부 판단
+      }
+    } catch (err) {
+      console.error("검색 결과 불러오기 실패", err);
+    } finally {
+      setIsFetching(false);
+      setIsInitialLoad(false); // 이후 요청은 스크롤에 의한 것
+
+    }
+  };
+  useEffect(() => {
+    setIsInitialLoad(true); // 새로운 검색어면 초기 상태
+    fetchSearchResults();
+  }, [query]);
+
+  const handleSearch = (searchText) => {
+    const existing = JSON.parse(localStorage.getItem("searchHistory") || "[]");
+  
+    if (!existing.includes(searchText)) {
+      const updated = [searchText, ...existing];
       localStorage.setItem("searchHistory", JSON.stringify(updated));
     }
-    navigate(`/SearchResult?query=${encodeURIComponent(text)}`);
+  
+    navigate(`/SearchResult?query=${encodeURIComponent(searchText)}`);
     setIsExpanded((prevState) => !prevState);
-
+  };
+  
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch(text);
     }
+  };
+  
+  const handleHistoryClick = (item) => {
+    setText(item);         // input에 값 세팅하려면 필요
+    handleSearch(item);    // 클릭한 기록으로 검색 실행
   };
 
   const handleChange = (e) => {
@@ -65,27 +99,12 @@ function App() {
   };
  
 
-  const fetchItems = async () => {
-    if (isFetching) return;
-    setIsFetching(true);
-    try {
-      const data = await getUsedItem(cursor, selectedFilter);
-      if (data && Array.isArray(data.content)) {
-        setCursor(data.cursor);
-        if (!data.hasNext) setIsLast(true);
-        setItems((prevItems) => [...prevItems, ...data.content]);
-      }
-    } catch (err) {
-      console.error("아이템 요청 실패", err);
-    } finally {
-      setIsFetching(false);
-    }
-  };
+  
 
   const filteredItems = items.filter((item) => {
     if (selectedFilter === 'ALL') return true;
-    if (selectedFilter === 'BUY') return item.transactionMode === 'BUY';
-    if (selectedFilter === 'SELL') return item.transactionMode === 'SELL';
+    if (selectedFilter === 'BUY') return item.transactionMode === 'SELL';
+    if (selectedFilter === 'SELL') return item.transactionMode === 'BUY';
     return true;
   });
 
@@ -98,7 +117,7 @@ function App() {
 
   useEffect(() => {
     if (inView && !isLast && !isFetching) {
-      fetchItems();
+      fetchSearchResults();
     }
   }, [inView, isLast, isFetching]);
 
@@ -123,7 +142,7 @@ function App() {
     <CommonBox>
       <PageStyle>
         <HeaderWrapper>
-        <Header title={'홈'} leftIcon={<SearchIcon onClick={handleAddClick} />} rightIcon={<AlertIcon />} />
+        <Header title={'검색결과'} leftIcon={<SearchIcon onClick={handleAddClick} />} rightIcon={<AlertIcon />} />
         </HeaderWrapper>
         <Filter
           filterShape={'else'}
@@ -159,7 +178,7 @@ function App() {
           <HistoryBox>
               {history.map((item, idx) => (
               <SearchList key={idx}>
-                <span>{item}</span>
+              <ListItem onClick={() => handleHistoryClick(item)}>{item}</ListItem>
               <StlyedCancle onClick={() => handleDelete(item)}>✕</StlyedCancle>
               </SearchList>
               ))}
@@ -173,7 +192,7 @@ function App() {
   );
 }
 
-export default App;
+export default SearchResult;
 
 const PageStyle = styled.div`
   width: 100%;
@@ -264,4 +283,6 @@ const StlyedCancle=styled(Cancle)`
   width: 20px;
   height: 20px;
 `
-
+const ListItem = styled.span`
+  cursor: pointer;
+`

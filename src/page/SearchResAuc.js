@@ -5,7 +5,7 @@ import CommonBox from '../style/CommonBox'
 import Footer from '../component/Footer'
 import Header from '../component/Header'
 import useFilterIconStore from '../store/filterIconStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useSearchParams } from 'react-router-dom';
 import {ReactComponent as PointPlus} from '../asset/svgs/PointPlus.svg'
 import AlertIcon from '../component/icons/AlertIcon'
 import {ReactComponent as Filter} from "../asset/svgs/Filter_alt.svg"
@@ -15,12 +15,13 @@ import SearchIcon from "../component/icons/SearchIcon";
 
 import AuctionCard from '../component/AuctionCard'
 import CategoryModal from '../component/CategoryModal'
-import {getAuctionItem} from "../api/ItemApi"
+import {searchApi_auc} from "../api/ItemApi"
 import useFetchUser from '../hook/useFetchUser';
 
-function Auction() {
+function SearchResAuc() {
   const { selectedIcon, selectButton, resetSelection } = useFilterIconStore();
-  
+  const [params] = useSearchParams();
+  const query = params.get('query');
   const [isOpen,setIsOpen]=useState(false);
   const [cursor, setCursor] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
@@ -32,6 +33,29 @@ function Auction() {
   const [text, setText] = useState("");
   const [history, setHistory] = useState([]); 
   const navigate = useNavigate();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const fetchSearchResults = async () => {
+    if (!query) return;
+    setIsFetching(true);
+    try {
+      const data = await searchApi_auc(query, isInitialLoad ? null : cursor); // 초기에는 null
+  
+      if (data && Array.isArray(data.content)) {
+        setItems(prev => isInitialLoad ? data.content : [...prev, ...data.content]); // 초기면 덮어쓰기, 아니면 추가
+        setCursor(data.cursor || null);
+        setIsLast(!data.hasNext);
+      }
+    } catch (err) {
+      console.error("검색 결과 불러오기 실패", err);
+    } finally {
+      setIsFetching(false);
+      setIsInitialLoad(false); // 이후 요청은 스크롤에 의한 것
+    }
+  };
+  useEffect(() => {
+    setIsInitialLoad(true); // 새로운 검색어면 초기 상태
+    fetchSearchResults();
+  }, [query]);
   const handleSearch = (searchText) => {
     const existing = JSON.parse(localStorage.getItem("searchHistory_auc") || "[]");
   
@@ -71,22 +95,6 @@ function Auction() {
   };
  
 
-  const fetchItems = async () => {
-      if (isFetching) return;
-      setIsFetching(true);
-      try {
-        const data = await getAuctionItem(cursor);
-        if (data && Array.isArray(data.content)) {
-          setCursor(data.cursor);
-          if (!data.hasNext) setIsLast(true);
-          setItems((prevItems) => [...prevItems, ...data.content]);
-        }
-      } catch (err) {
-        console.error("아이템 요청 실패", err);
-      } finally {
-        setIsFetching(false);
-      }
-    };
   
 
   const setModal=useCallback(()=>{
@@ -94,32 +102,28 @@ function Auction() {
   },[])
   
 
-
   
   useEffect(() => {
     if (inView && !isLast && !isFetching) {
-      fetchItems();
+        fetchSearchResults();
+
     }
   }, [inView, isLast, isFetching]);
   return (
     <CommonBox>
         <PageStyle>
           <HeaderWrapper>
-            <Header title={'홈'} leftIcon={<SearchIcon onClick={handleAddClick2}/>} rightIcon={<AlertIcon/>}/>
+            <Header title={'검색결과'} leftIcon={<SearchIcon onClick={handleAddClick2}/>} rightIcon={<AlertIcon/>}/>
           </HeaderWrapper>  
             <PageFilter>
-                <FilterDiv onClick={setModal}><Filter/>필터</FilterDiv> {/**현재는 아이템종류안와서 안오면 폐기*/}
+                <FilterDiv onClick={setModal}><Filter/>필터</FilterDiv>
                 <RemainPointBox>잔여단추<RemainPoin>{(userInfo.point).toLocaleString()}</RemainPoin><PointPlus/></RemainPointBox>
             </PageFilter>
             <AppMain>
-            {items.length > 0 ? (
-                items
-                  .filter(item => 
-                    !selectedIcon || selectedIcon.length === 0 || selectedIcon.includes(item.category)
-                  )
-                  .map(item => (
-                    <AuctionCard key={item.id} item={item} imgName={item.imageName} />
-                  ))
+              {items.length > 0 ? (
+                items.map(item => (
+                  <AuctionCard key={item.id} item={item} imgName={item.imageName} />
+                ))
               ) : (
                 <p>아이템이 없습니다.</p>
               )}
@@ -162,7 +166,7 @@ function Auction() {
   )
 }
 
-export default Auction
+export default SearchResAuc
 
 const PageStyle = styled.div`
   width: 100%;

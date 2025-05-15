@@ -17,15 +17,13 @@ api.interceptors.request.use(
         try {
           accessToken = await refreshAccessToken(); 
           config.headers['Authorization'] = `Bearer ${accessToken?.accessToken}`; 
-          console.log('새 엑세스 토큰을 헤더에 추가:', config.headers['Authorization']);
         } catch (error) {
           console.error('엑세스 토큰 갱신 실패:', error.message);
-          // 실패 시 로그인 화면으로 리디렉션하거나 다른 처리를 할 수 있음
+          window.location.href = '/login';
           return Promise.reject(error);
         }
       } else {
         config.headers['Authorization'] = `Bearer ${accessToken}`;
-        console.log('헤더에 엑세스 토큰이 설정되었습니다:', config.headers['Authorization']);
       }
   
       return config;
@@ -48,7 +46,6 @@ api.interceptors.response.use(
 
                 
                 originReq.headers['Authorization'] = `Bearer ${newAccessToken}`;
-                console.log("엑세스 토큰 갱신 후 재요청:", originReq);
 
                 return axios(originReq);
             }catch(refreshErr){

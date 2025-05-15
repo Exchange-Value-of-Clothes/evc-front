@@ -24,6 +24,14 @@ import Social from './page/social';
 import {ReactComponent as EvcbigLogo} from './asset/svgs/Evc_bigLogo.svg'
 import PaymentPage from './page/payPage';
 import PaySuccess from './page/paySuccess';
+import ParcelFind from './page/ParcelFind';
+import InfoSet from './page/InfoSet';
+import SearchResult from './page/SearchResult';
+import SearchResAuc from './page/SearchResAuc'
+import DetailParcel from './page/DetailParcel'
+import { refreshAccessToken } from './api/authApi';
+import userStore from './store/userStore';
+
 
 function App() {
   const location = useLocation();
@@ -37,15 +45,27 @@ function App() {
 
   const SplashScreen = () => {
     const navigate = useNavigate();
-  
+
     useEffect(() => {
-      const timer = setTimeout(() => {
-        navigate("/login"); // 3초 후 /home으로 이동
-    
+      const checkAuth = async () => {
+        try {
+          await refreshAccessToken();
+          localStorage.setItem('LoginState',true);
+          // ✅ 자동 로그인 성공 시 /home으로 이동
+          navigate('/home');
+        } catch (err) {
+          console.log('자동 로그인 실패. 로그인 페이지로 이동');
+          navigate('/login');
+        }
+      };
+
+      // 자동 로그인 체크 후 3초 기다리기
+      setTimeout(() => {
+        checkAuth(); // 3초 후 자동 로그인 시도
       }, 3000);
-  
-      return () => clearTimeout(timer);
+
     }, [navigate]);
+    
   
     return (
       <div className="container">
@@ -66,7 +86,7 @@ function App() {
         <Route path="/" element={<SplashScreen/>} />
         <Route path="/home" element={<Main/>} />
         <Route path="/item/:id" element={<Itempage/>} />
-        <Route path="/auction_item/*" element={<AuctionItemPage/>} />
+        <Route path="/auction_item/:id" element={<AuctionItemPage/>} />
         <Route path="/login" element={<SignIn/>} />
         <Route path="/signup" element={<SignUp/>} />
         <Route path="/alert" element={<Notifications/>} />
@@ -83,7 +103,11 @@ function App() {
         <Route path="/social-login-success" element={<Social/>} />       
         <Route path="/payment" element={<PaymentPage/>} />
         <Route path="/paySuccess" element={<PaySuccess/>} />
-
+        <Route path="/ParcelFind" element={<ParcelFind/>} />
+        <Route path="/InfoSet" element={<InfoSet/>} />
+        <Route path="/SearchResult" element={<SearchResult/>} />
+        <Route path="/SearchResAuc" element={<SearchResAuc/>} />
+        <Route path="/DetailParcel/:id" element={<DetailParcel/>} />
        </Routes>
 
     </div>

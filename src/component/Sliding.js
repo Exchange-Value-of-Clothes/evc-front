@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { deleteAuc,deleteUsed,editUsed } from '../api/ItemApi';
 
-const SlidingPanel = ({ isOpen, onClose, targetRef }) => {
+const SlidingPanel = ({ isOpen, onClose, targetRef,itemId,kinds }) => {
   const [panelSize, setPanelSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
@@ -13,6 +14,25 @@ const SlidingPanel = ({ isOpen, onClose, targetRef }) => {
       });
     }
   }, [targetRef]);
+  //경매는 예약중 거래완료 뺴기 삭제시 부모컴포넌트건드려서지울지 리로드할지고민
+  const handleDelete = async () => {
+    try {
+      if (!itemId) return;
+
+      if (kinds === 'AUCTION') {
+        await deleteAuc(itemId);
+        console.log(`경매 아이템 ${itemId} 삭제 완료`);
+      } else {
+        await deleteUsed(itemId);
+        console.log(`중고 아이템 ${itemId} 삭제 완료`);
+      }
+
+      onClose(); 
+    } catch (err) {
+      console.error('삭제 실패:', err);
+      
+    }
+  };
 
   return (
     <Panel $isOpen={isOpen} size={panelSize}>
@@ -28,7 +48,7 @@ const SlidingPanel = ({ isOpen, onClose, targetRef }) => {
           <CorrectionDiv>
             게시물 수정
           </CorrectionDiv>
-          <DeleteDiv>
+          <DeleteDiv onClick={handleDelete}>
             삭제 
           </DeleteDiv>
 

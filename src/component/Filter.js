@@ -4,10 +4,17 @@ import styled from 'styled-components';
 import { ReactComponent as FilterIcon } from '../asset/svgs/Filter_alt.svg';
 
 function Filter({ filterShape, addAuc, selectedFilter, setSelectedFilter }) {
+  const filters = [
+    { label: '전체', value: 'ALL' },
+    { label: '구매', value: 'BUY' },
+    { label: '판매', value: 'SELL' },
+    ...(addAuc ? [{ label: '경매', value: 'AUCTION' }] : []),
+  ];
   const handleFilterClick = (filter) => {
     if (selectedFilter !== filter) {
       setSelectedFilter(filter);
     }
+    
   };
 
   return (
@@ -22,13 +29,13 @@ function Filter({ filterShape, addAuc, selectedFilter, setSelectedFilter }) {
         </FilterIconDiv>
       )}
 
-      {['전체', '구매', '판매', addAuc && '경매'].filter(Boolean).map((type) => (
+        {filters.map(({ label, value }) => (
         <FilterButton
-          key={type}
-          $selected={selectedFilter === type}
-          onClick={() => handleFilterClick(type)}
+          key={value}
+          $selected={selectedFilter === value}
+          onClick={() => handleFilterClick(value)}
         >
-          {type}
+          {label}
         </FilterButton>
       ))}
     </FilterDiv>

@@ -22,11 +22,9 @@ function SignIn() {
           mutationFn: logInApi,
           onSuccess: (data) => {
             
-            console.log("로그인 성공:", data);
             alert("로그인 성공!");
             localStorage.setItem('LoginState',true);
             const  accessToken  = data.accessToken
-            console.log(accessToken)
             setAccessToken(accessToken);
             axios.defaults.headers.common['Authorization']=`Bearer ${accessToken}`;
             navigate('/home');
@@ -50,7 +48,6 @@ function SignIn() {
           e.preventDefault();
           
           setError("")
-          console.log('Submitted:', formData);
           loginMutation.mutate(formData);
         };
     
@@ -229,6 +226,12 @@ const LoginButton =styled.button`
   padding: 16px 10px;
   height: 53px;
   font-size: 16px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+
+  &:hover {
+    background-color: #45a049;
+  }
 
 `
 const SocialDiv =styled.div`

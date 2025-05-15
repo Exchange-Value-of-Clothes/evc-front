@@ -10,7 +10,7 @@ import { useLocation,useNavigate } from 'react-router-dom';
 import usePageFilterStore from '../store/filterStore';
 import { useSwipeable } from 'react-swipeable';
 import {getRooms,joinRoom,exitRoom} from '../api/chatApi'
-
+import { useInView } from "react-intersection-observer";
 
 function ChatPage() {
   const location = useLocation();
@@ -19,11 +19,17 @@ function ChatPage() {
   const selectedFilter = filters[currentPage];
 
   const [rooms, setRooms] = useState([]);
+
+  const { ref, inView } = useInView({ threshold: 0 });
+  const [isLast, setIsLast] = useState(false);
   const [cursor, setCursor] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isFetching, setIsFetching] = useState(false);
+  
 
   const navigate = useNavigate();
+
+  
     
   const handleCardClick = async (roomId) => {
     try {
@@ -34,46 +40,57 @@ function ChatPage() {
       navigate(`/chat/rooms/${roomId}`, { state: { roomData } });
     } catch (err) {
       console.error("❌ 방 입장 실패:", err);
-      setError("Failed to join the room");
     }
   };
-  useEffect(() => {
-    fetchRooms();
-  }, []);
 
   useEffect(() => {
-    console.log("📌 cursor 업데이트됨:", cursor);
-  }, [cursor]);
+  const fetchInitialRooms = async () => {
+    // 첫 번째 호출
+    const response1 = await fetchRooms(cursor);
+
+    // 두 번째 호출, 첫 번째 응답에서 받은 cursor 사용
+    if (response1 && response1.cursor) {
+      await fetchRooms(response1.cursor);
+    }
+  };
+
+  fetchInitialRooms(); // 컴포넌트가 마운트될 때 실행
+}, []); // []는 컴포넌트가 
+
+
+
+
   
 
-  const fetchRooms = async () => {
-    try {
-      const response = await getRooms();
-      console.log("📢 응답 객체:", response);
+ const fetchRooms = async (cursorParam = cursor) => {
+  if (isFetching || isLast) return;
 
-      if (!response || !response.content) {
-        console.error("❌ response.content가 존재하지 않음!");
-        return;
-      }
+  setIsFetching(true);
 
-      // `isSwiped: false` 추가하여 상태 저장
-      const roomsWithSwipeState = response.content.map(room => ({
-        ...room,
-        isSwiped: false
-      }));
+  try {
+    const response = await getRooms(cursorParam);
 
-      setRooms(roomsWithSwipeState);
-      setCursor(response.cursor);
-      console.log("📌 setCursor 호출됨, 새로운 값:", response.cursor);
-
-      console.log("✅ rooms 상태 업데이트:", roomsWithSwipeState);
-    } catch (err) {
-      console.error("❌ 방 목록 조회 실패:", err);
-      setError("Failed to fetch rooms");
-    } finally {
-      setLoading(false);
+    if (!response || !response.content) {
+      console.error("❌ response.content가 존재하지 않음!");
+      return response;
     }
-  };
+
+    const newRooms = response.content.map(room => ({
+      ...room,
+      isSwiped: false
+    }));
+
+    setRooms(prev => [...prev, ...newRooms]);
+    setCursor(response.cursor);
+    setIsLast(!response.hasNext);
+    return response;
+  } catch (err) {
+    console.error("❌ 방 목록 조회 실패:", err);
+  } finally {
+    setIsFetching(false);
+    setLoading(false);
+  }
+};
 
   const handleSwipeLeft = (id) => {
     setRooms((prevRooms) =>
@@ -95,6 +112,11 @@ function ChatPage() {
     setRooms((prevRooms) => prevRooms.filter((room) => room.chatRoomId !== id));
     exitRoom(id);
   };
+  useEffect(() => {
+  if (inView && !isFetching && !isLast) {
+    fetchRooms();
+  }
+}, [inView]);
 
   return (
     <CommonBox>
@@ -108,27 +130,34 @@ function ChatPage() {
           setSelectedFilter={(val) => {
             if (selectedFilter !== val) setFilter(currentPage, val);
           }}
-        />
+        /> {/*모드응답값안온다면폐기*/}
 
         <AppMain>
-          {rooms.map((room) => (
-            <SwipeableChatCard
-              key={room.chatRoomId}
-              id={room.chatRoomId}
-              isSwiped={room.isSwiped}
-              onSwipeLeft={handleSwipeLeft}
-              onSwipeRight={handleSwipeRight}
-              onDelete={handleDelete}
-            >
-              <ChatCard 
-                roomid={room.chatRoomId}
-                cursor={room.createdAt}
-                lastChat={room.lastMessage}
-                onClick={() => handleCardClick(room.chatRoomId)}
-              />
-            </SwipeableChatCard>
-          ))}
-        </AppMain>
+          {rooms.map((room) => {
+              return (
+                <SwipeableChatCard
+                  key={room.chatRoomId}
+                  id={room.chatRoomId}
+                  isSwiped={room.isSwiped}
+                  onSwipeLeft={handleSwipeLeft}
+                  onSwipeRight={handleSwipeRight}
+                  onDelete={handleDelete}
+                >
+                  <ChatCard 
+                    data={room}
+                    roomid={room.chatRoomId}
+                    cursor={room.createdAt}
+                    lastChat={room.lastMessage}
+                    onClick={() => handleCardClick(room.chatRoomId)}
+                  />
+                </SwipeableChatCard>
+              );
+            })}
+
+            {/* 👇 추가된 부분: 스크롤 하단 감지용 요소 */}
+                      {!isLast && <div ref={ref}></div>}
+
+          </AppMain>
         <Footer />
       </PageStyle>
     </CommonBox>
@@ -189,6 +218,7 @@ const CardWrapper = styled.div`
   display: flex;
   align-items: center;
   overflow: hidden;
+  min-height: 120px;
 `;
 
 const CardContainer = styled.div`

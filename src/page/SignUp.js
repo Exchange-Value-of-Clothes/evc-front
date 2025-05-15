@@ -28,7 +28,6 @@ function SignUp() {
   const mutation = useMutation({
     mutationFn:registerApi,
     onSuccess: (data) => {
-      console.log("회원가입요청 성공:", data);
       alert("인증메일을 확인후 로그인해주세요!");
       //navigate('/login');
     },
@@ -36,7 +35,6 @@ function SignUp() {
       console.error("회원가입 실패:", error);
       alert("회원가입 실패!");
       if(error.message==="Request failed with status code 409"){
-        console.log("중복이멜");
         setError((prevError) => ({
           ...prevError,
           email: "이미 존재하는 이메일입니다.",
@@ -66,9 +64,8 @@ function SignUp() {
       return
     }else{ 
       try{
-        const data=await RequestCodeApi(formData.email);
+        await RequestCodeApi(formData.email);
         alert("인증코드가 메일로 재발송 되었습니다.");
-        console.log(data);
       } catch (err) {
         alert('인증 코드 재요청 실패');
         console.error(err);
@@ -111,7 +108,6 @@ function SignUp() {
     }
    
     setError({ email: "", nickname: "", password: "", checkPassword: "" });
-    console.log('Submitted:', formData);
     mutation.mutate(formData);
   };
 
@@ -297,6 +293,12 @@ const DuplicateCheck=styled.button`
   border: none;
   font-size: 14px;
   font-family: 'NeoM',sans-serif;
+  cursor: pointer;
+  transition: all 0.1s ease;
+
+  &:hover {
+    background-color:rgb(43, 43, 44);
+  }
 
 `
 const SignupNameInput=styled.input`
@@ -372,6 +374,12 @@ const SignupButton=styled.button`
   font-size: 16px;
   @media (max-height: 700px) {
     padding: 10px 6px 10px 6px;
+  }
+  cursor: pointer;
+  transition: all 0.1s ease;
+
+  &:hover {
+    background-color: #45a049;
   }
 
 `

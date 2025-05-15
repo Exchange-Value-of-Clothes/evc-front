@@ -1,38 +1,32 @@
-import React from 'react'
-import eximg from '../asset/image/후드티.jpg'
-import {ReactComponent as Selling} from "../asset/svgs/selling.svg"
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import styled from 'styled-components';
-import {ReactComponent as Chat} from "../asset/svgs/chat.svg"
+import defaultImg from '../asset/image/defaultImg.png'
 
+const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
 
-function ChatCard({ onClick , roomid,cursor,lastChat}) {
- 
-    
-  
+function ChatCard({ data,onClick , roomid,cursor,lastChat}) {
   return (
   
     <ItemCard onClick={onClick}>
     
         <CardImgBox>
-          <CardImg src={ eximg } alt=""/>
+          <CardImg src={data.profileImageName?`${IMG_URL}/${data.profileImageName}` : defaultImg} alt=""/>
          
         </CardImgBox>
       
         <CardTextBox>
             <CardTitleDiv>
-                <Title>{roomid}</Title> 
-                <SellingIcon/>
+                <Title>{data.otherNickname}</Title> 
             </CardTitleDiv>
             <CardUploadTime>{cursor}</CardUploadTime>
             <LastChatDiv>
                 <LastChat>{lastChat}</LastChat>
-                <NotReadChat>
+                {/*<NotReadChat>
                     <Chat/>
                     <Count>
                         {"안읽은채팅수"}
                     </Count>
-                </NotReadChat>
+                </NotReadChat>*/}
             </LastChatDiv>
             
         </CardTextBox>
@@ -50,13 +44,13 @@ const ItemCard = styled.div`
   box-sizing: border-box;
   width: 100%;
   min-height: 120px;
+  
   padding: 8px 16px;
   gap: 16px;
   display: flex;
   border-bottom: ${props => (props.$border?'solid 1px #4A4A4A':'none')};
 `
 const CardImgBox = styled.div`
-  background-color: #2C2C2E;
   min-width: 100px;
   height: 100px;
   border-radius: 4px;
@@ -68,6 +62,7 @@ const CardImg = styled.img`
   height: 100%;
   border-radius: 4px;
   object-fit: cover;
+  
 `
 const CardTextBox = styled.div`
   color: #F4F4F4;
@@ -75,8 +70,7 @@ const CardTextBox = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  justify-content: center;
+  justify-content: space-between;
 `
 const CardTitleDiv = styled.div`
   height: 24px;
@@ -106,19 +100,8 @@ const CardUploadTime = styled.div`
 
 `
 
-const SellingIcon =styled(Selling)`
 
-`
 
-const NotReadChat=styled.div`
-    color: white;
-    display: flex;
-    gap: 6px;
-    font-family: 'NeoM',sans-serif;
-    align-items: center;
-    font-size: 16px;
-    
-`
 const LastChatDiv=styled.div`
     width: 100%;
     height: 24px;
@@ -136,9 +119,5 @@ const LastChat=styled.div`
     text-overflow: ellipsis; 
     overflow: hidden;
 `
-const Count=styled.span`
-    font-family: 'NeoM',sans-serif;
-    align-items: center;
-    font-size: 16px;
-` 
+
     

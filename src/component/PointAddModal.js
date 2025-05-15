@@ -4,7 +4,6 @@ import { useNavigate, } from 'react-router-dom';
 import Modal from 'react-modal';
 import styled from 'styled-components';
 import {ReactComponent as BackArrow} from "../asset/svgs/Back.svg"
-import { payApi } from '../api/payApi';
 
 const PointAddModal=({isOpen,close})=> {
     const navigate =useNavigate();
@@ -129,6 +128,12 @@ const Button5000=styled.button`
     border-radius: 8px;
     border: none;
     background-color: #444448;
+    cursor: pointer;
+  transition: all 0.1s ease;
+
+  &:hover {
+    background-color:rgb(44, 44, 44);
+  }
 
 `
 const Button10000=styled.button`
@@ -137,6 +142,12 @@ const Button10000=styled.button`
     border-radius: 8px;    
     border: none;
     background-color: #444448;
+    cursor: pointer;
+  transition: all 0.1s ease;
+
+  &:hover {
+    background-color:rgb(43, 43, 43);
+  }
    
 `
 const Button50000=styled.button`
@@ -145,6 +156,12 @@ const Button50000=styled.button`
     border-radius: 8px;
     border: none;
     background-color: #444448;
+    cursor: pointer;
+  transition: all 0.1s ease;
+
+  &:hover {
+    background-color:rgb(44, 44, 44);
+  }
 
 
 `
@@ -173,6 +190,12 @@ const Button2=styled.button`
   background-color: #08AC72;
   border: none;
   border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+
+  &:hover {
+    background-color: #45a049;
+  }
   
 
 `

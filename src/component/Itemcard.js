@@ -1,37 +1,44 @@
 import React from 'react'
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import {ReactComponent as Selling} from "../asset/svgs/selling.svg"
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import StateIcon from './icons/StateIcon';
 
 const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
 
-
-function Itemcard({item,imgName, extraIcon, onClick }) {
- 
+function Itemcard({item,imgName, extraIcon, onClick,isAuc }) {
     const navigate = useNavigate();
-  
     const handleCardClick = () => {
-      navigate(`/item/${item.usedItemId}`); // 
-      console.log('이미지주소',IMG_URL+item.imageName)
-      console.log("IMG_URL:", IMG_URL); 
-      console.log("전체 환경 변수:", process.env);
-    
-
+      if(isAuc===true){
+        navigate(`/auction_item/${item.auctionItemId}`,{
+          state:{
+          startPrice:item.price,
+          id:item.auctionItemId,
+          }
+        }); 
+      }
+      else{
+        navigate(`/item/${item.usedItemId}`); 
+      }
     }
-    const formatTimeAgo=(date)=> {
-      
+    const formatTimeAgo=(date)=> {   
       const parsedDate = new Date(date); // 받아온 날짜 문자열을 Date 객체로 파싱
       return formatDistanceToNow(parsedDate,  { addSuffix: true, locale: ko }); // '30초 전' 형식으로 변환
     }
+    const transactionInfo = {
+      SELL: { color: '#5AC8FA', text: '판매' },
+      BUY: { color: '#FF6F0F', text: '구매' },
+      AUCTION: { color: '#16FF00', text: '경매' },
+    };
+    const { color, text } = transactionInfo[item.transactionMode] || { color: '#ccc', text: 'none' };
 
     return (
       <ItemCard onClick={handleCardClick}>
         <CardImgBox>
           <CardImg src={`${IMG_URL}/${encodeURIComponent(imgName)}` || 'default_image_url.jpg'} alt={item.title} /> 
-          {item.transactionStatue==="RESERVE"&& (
+          {item.transactionStatus==="RESERVE"&& (
             <Overlay>
               <OverlayText>예약 중</OverlayText>
             </Overlay>
@@ -42,13 +49,13 @@ function Itemcard({item,imgName, extraIcon, onClick }) {
           <CardTitleDiv>
             <Title>{item.title}</Title> {/* 아이템 제목 표시 */}
             <IconsDiv>
-              <SellingIcon />
+              <StateIcon color={color} text={text} />
               {extraIcon && (
                 <Extrabutton onClick={onClick}>
                   {extraIcon}
                 </Extrabutton>
               )}
-            </IconsDiv>
+              </IconsDiv>
           </CardTitleDiv>
           <CardUploadTime>{formatTimeAgo(item.createAt) || "00:00"}</CardUploadTime> {/* 업로드 시간 표시 */}
           <CardPriceDiv>{(item.price).toLocaleString()}원
@@ -63,9 +70,7 @@ function Itemcard({item,imgName, extraIcon, onClick }) {
       </ItemCard>
     );
   }
-  
   export default Itemcard;
-
 
 Itemcard.defaultProps = {
   extraIcon: null, 
@@ -156,9 +161,7 @@ const CardPriceDiv = styled.div`
   justify-content: space-between;
 
 `
-const SellingIcon =styled(Selling)`
 
-`
 const CardLiked = styled.div`
   color: white;
   display: flex;

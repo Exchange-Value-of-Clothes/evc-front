@@ -4,10 +4,9 @@ import Modal from 'react-modal';
 import styled from 'styled-components';
 import {ReactComponent as BackArrow} from "../asset/svgs/Back.svg"
 import PointAddModal from './PointAddModal';
+import {sendPrice} from '../hook/useChat'
 
-
-
-const PointModal=({isOpen,close})=> {
+const PointModal=({isOpen,close,id, stompClient })=> {
     const modalRoot = document.getElementById('portal');
     const [isOpenAdd,setIsOpenAdd]=useState(false);
     const setModalAdd=useCallback(()=>{
@@ -15,8 +14,29 @@ const PointModal=({isOpen,close})=> {
       setIsOpenAdd((prev)=>!prev);
           
     },[])
+
   
-    
+    const [addPrice,setAddPrice] = useState('');
+
+    const handlePriceChange = (e) => {
+      const value = e.target.value;
+  
+      // 숫자만 입력받을 수 있도록 필터링 (빈 문자열, 숫자만 허용)
+      if (/^\d*$/.test(value)) {
+        setAddPrice(value);
+      }
+    };
+    const handleSendPrice = (e) => {
+      e.preventDefault();  // 기본 폼 제출 동작 방지
+
+      if (addPrice) {
+        sendPrice(stompClient, id, addPrice);  // sendPrice 호출하여 가격 전송
+        alert(`${addPrice}원 입찰`)
+      } else {
+        console.error("가격을 입력하세요.");
+      }
+    };
+      
 
     return ReactDom.createPortal(
     <StyleModal isOpen={isOpen} onRequestClose={close} style={{
@@ -28,8 +48,8 @@ const PointModal=({isOpen,close})=> {
                 <Span0>{'경매하기'}</Span0> 
             </ModalHeader>
             <ContentDiv>
-              <PointInput placeholder='얼마나 사용할까요?'/>
-              <Sspan> 호가 단위로 추가하여 입력해주세요</Sspan>
+              <PointInput placeholder='얼마나 사용할까요?' name="addPrice" value={addPrice} onChange={handlePriceChange}/>
+              <Sspan> 호가 단위로 추가하여 입력해주세요</Sspan>  {/*이거 호가 프롭스로넣기수정필요 */}
               <Sdiv>
               <CurrentPoint>현재 보유량 {(230000).toLocaleString()}</CurrentPoint>
               </Sdiv>
@@ -38,7 +58,7 @@ const PointModal=({isOpen,close})=> {
             </ContentDiv>
             <ButtonDiv>
             <Button1 onClick={setModalAdd}>포인트 충전하기</Button1>
-            <Button2>입찰하기</Button2>
+            <Button2 onClick={handleSendPrice}>입찰하기</Button2>
               
             </ButtonDiv>
             
@@ -144,6 +164,13 @@ const Button1=styled.button`
   background-color: #757575;
   border: none;
   border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+
+  &:hover {
+    background-color:rgb(44, 44, 44);
+  }
+
 
 
 `
@@ -153,6 +180,13 @@ const Button2=styled.button`
   background-color: #08AC72;
   border: none;
   border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+
+  &:hover {
+    background-color: #45a049;
+  }
+
   
 
 `

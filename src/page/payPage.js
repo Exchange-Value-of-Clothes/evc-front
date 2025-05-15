@@ -16,7 +16,6 @@ const PaymentPage = () => {
       try {
         // API 호출로 결제 정보 처리
         const res = await payApi(point);
-        console.log(res); // API 호출 성공시 확인용
 
         script.onload = () => {
           if (window.TossPayments) {

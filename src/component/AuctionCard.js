@@ -2,52 +2,59 @@ import React from 'react'
 import styled from 'styled-components'
 import {ReactComponent as Heart} from '../asset/svgs/AuctionHeart.svg'
 import {ReactComponent as TimeIcon} from '../asset/svgs/Time.svg'
-import eximg from '../asset/image/후드티.jpg'
 import { useNavigate } from 'react-router-dom'
 import formatNumber from '../util/formatNumber';
+import { Timer } from '../util/timer';
 
 
-function AuctionCard() {
+const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
+
+function AuctionCard({item,imgName  }) {
 
     const price=100000
     const navigate = useNavigate();
   
     const handleCardClick = () => {
-      navigate(`/auction_item/1`); // 
+      navigate(`/auction_item/${item.auctionItemId}`,{
+        state:{
+        startPrice:item.startPrice,
+        id:item.auctionItemId,
+        }
+      }); // 
     }
+    
 
     return (
         <ContentsBox  onClick={handleCardClick}>
             <ImgBox>
-                <Img src={eximg} alt=''/>
+                <Img src={`${IMG_URL}/${encodeURIComponent(imgName)}` || 'default_image_url.jpg'} alt=''/>
             </ImgBox>
             <StatusBox>
-                <span style={{fontFamily:'NeoM,sans-serif'}}>제목</span>
-                <HeartIcon></HeartIcon>
+                <span style={{fontFamily:'NeoM,sans-serif',fontSize:'16px'}}>{item.title}</span>
+                
                 <ParticipantsBox>
                     <ExSpan>108명 참여중</ExSpan>
                 </ParticipantsBox>
+                <HeartIcon/>
             </StatusBox>
-            <BriefBox>
-                <Brief>간단한설명 </Brief>
-            </BriefBox>
+           
             <PriceDiv>
                 <PriceBox>
                     <PriceType>호가 단위</PriceType>
-                    <Price>{price > 100000 ? formatNumber(price) : (price).toLocaleString()}원 </Price>
+                    <Price>{price > 100000 ? formatNumber(item.bidPrice) : (item.bidPrice).toLocaleString()}원 </Price>
                 </PriceBox>
                 <PriceBox>
                     <PriceType>시작 가격 </PriceType>
-                    <Price>{price > 100000 ? formatNumber(price) : (price).toLocaleString()}원 </Price>
+                    <Price>{price > 100000 ? formatNumber(item.startPrice) : (item.startPrice).toLocaleString()}원 </Price>
                 </PriceBox>
                 <PriceBox>
                     <PriceType>현재 가격 </PriceType>
-                    <Price> {price > 100000 ? formatNumber(price) : (price).toLocaleString()}원</Price>
+                    <Price> {price > 100000 ? formatNumber(item.currentPrice) : (item.currentPrice).toLocaleString()}원</Price>
                 </PriceBox>
             </PriceDiv>
             <RemainTimeDiv>
                 <Clock/>
-                <RemainTime>잔여 시간 06:30:23 </RemainTime>
+                <RemainTime><Timer endTime={item.endTime}/></RemainTime>
             </RemainTimeDiv>
         </ContentsBox>
     )
@@ -88,6 +95,7 @@ const StatusBox = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
 
 `
 const ParticipantsBox = styled.div`
@@ -99,21 +107,13 @@ const ParticipantsBox = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-left:auto ;
 
 `
 const HeartIcon = styled(Heart)`    
-    margin-left: 52%;
+    
     width: 5%;
     height: 100%;
-
-`
-const BriefBox = styled.div`
-    width: 100%;
-    height: 7%;
-`
-const Brief = styled.span`
-    font-size: 14px;
-    font-family: 'NeoM',sans-serif;
 
 `
 const PriceDiv = styled.div`

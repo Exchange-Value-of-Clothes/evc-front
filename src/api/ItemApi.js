@@ -4,17 +4,16 @@ import api from "./intercept";
 const API_URL = process.env.REACT_APP_API_URL;
 
 
-export const registerApi = async (datas) => {
+export const registerApi = async (type,datas) => {
     try {
         const res = await api({
             method: "post",
-            url: `/api/useditems`,
+            url: `/api/${type}`,
            
             data: datas,
             withCredentials: true,
         });
 
-        console.log("등록성공", res);
         return res.data;
     } catch (err) {
         if (err.response) {
@@ -39,7 +38,6 @@ export const getUsedItem = async (cursors) => {
             }
         });
 
-        console.log(`$페이지 조회성공`, res);
         return res.data;
     } catch (err) {
         console.error("조회실패", err);
@@ -56,7 +54,6 @@ export const getSpecUsedItem = async (itemId) => {
            
         });
 
-        console.log(`아이템 조회성공`, res);
         return res.data;
     } catch (err) {
         console.error("조회실패", err);
@@ -80,7 +77,6 @@ export const postImg = async (imgPath, imgs) => {
             },
         });
 
-        console.log(`이미지 이름 전송 완료`, res);
         return res.data;
     } catch (err) {
         console.log("보낸거",imgs)
@@ -102,12 +98,226 @@ export const s3Img = async (signedUrl,type,file)=>{
             data:file,
         });
 
-        console.log(`이미지 S3 전송 완료`, res);
         return res.data;
     } catch (err) {
         console.log("url",signedUrl,"타입",type,"파일",file)
         console.error('S3 Upload Error:', err.response?.data || err.message);
 
+        throw err;
+    }
+};
+
+export const getAuctionItem = async (cursors) => {
+    try {
+        const res = await api({
+            method: "get",
+            url: `${API_URL}/api/auctionitems`,
+            withCredentials: true,
+            params:{
+                cursor:cursors,
+            }
+        });
+
+        return res.data;
+    } catch (err) {
+        console.error("경매페이지조회실패", err);
+        throw err;
+    }
+};
+
+export const getSpecAucItem = async (itemId) => {
+    try {
+        const res = await api({
+            method: "get",
+            url: `/api/auctionitems/${itemId}`,
+            withCredentials: true,
+           
+        });
+        return res.data;
+    } catch (err) {
+        console.error("경매아이템조회실패", err);
+        throw err;
+    }
+};
+
+export const createAuc = async (Id) => {
+    try {
+        const res = await api({
+            method: "post",
+            url: `/api/bid/${Id}`,
+            withCredentials: true,
+           
+        });
+
+        return res.data;
+    } catch (err) {
+        console.error("경매생성실패", err);
+        throw err;
+    }
+};
+
+
+export const searchApi = async (text,cursors) => {
+    try {
+        const res = await api({
+            method: "get",
+            url: `/api/useditems/search`,
+            withCredentials: true,
+            params:{
+                q:text,
+                cursor:cursors
+
+            }
+           
+        });
+
+        
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+    }
+};
+
+export const searchApi_auc = async (text,cursors) => {
+    try {
+        const res = await api({
+            method: "get",
+            url: `/api/auctionitems/search`,
+            withCredentials: true,
+            params:{
+                q:text,
+                cursor:cursors
+            }
+           
+        });
+
+        
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+    }
+};
+
+export const getMyitem = async (cursors,state) => {
+    try {
+        const res = await api({
+            method: "get",
+            url: `/api/my/useditems`,
+            withCredentials: true,
+            params:{
+                cursor:cursors,
+                condition:state
+            }
+           
+        });
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+    }
+};
+
+export const getMyAuc = async (cursors) => {
+    try {
+        const res = await api({
+            method: "get",
+            url: `/api/my/auctionitems`,
+            withCredentials: true,
+            params:{
+                cursor:cursors,     
+            }    
+        });
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+    }
+};
+
+export const getOrderList = async (cursors) => {
+    try {
+        const res = await api({
+            method: "get",
+            url: `/api/deliveries`,
+            withCredentials: true,
+            params:{
+                cursor:cursors,     
+            }    
+        });
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+    }
+};
+
+export const getOrder = async (orderId) => {
+    try {
+        const res = await api({
+            method: "get",
+            url: `/api/deliveries/${orderId}`,
+            withCredentials: true,
+              
+        });
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+    }
+};
+
+export const editUsed = async (usedItemId,state) => {
+    try {
+        const res = await api({
+            method: "patch",
+            url: `/api/useditems/${usedItemId}`,
+            withCredentials: true,
+            params:{
+                transactionStatus:state
+            }
+        });
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+    }
+};
+
+export const deleteUsed = async (usedItemId) => {
+    try {
+        const res = await api({
+            method: "delete",
+            url: `/api/useditems/${usedItemId}`,
+            withCredentials: true,
+              
+        });
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+    }
+};
+
+export const deleteAuc = async (usedItemId) => {
+    try {
+        const res = await api({
+            method: "delete",
+            url: `/api/auctionitems/${usedItemId}`,
+            withCredentials: true,
+              
+        });
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
         throw err;
     }
 };

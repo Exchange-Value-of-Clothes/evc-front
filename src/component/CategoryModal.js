@@ -20,15 +20,15 @@ const CategoryModal = ({ isOpen, close, selectedIcon, selectButton, resetSelecti
 
   // 아이콘 리스트
   const icons = [
-    { name: "Top", component: <Top /> },
-    { name: "Pants", component: <Pants /> },
-    { name: "Skirt", component: <Skirt /> },
-    { name: "Outer", component: <Outer /> },
-    { name: "Onepiece", component: <Onepiece /> },
-    { name: "Acc", component: <Acc /> },
-    { name: "Shoe", component: <Shoe /> },
-    { name: "Bag", component: <Bag /> },
-    { name: "Fetc", component: <Fetc /> },
+    { name: "상의", component: <Top /> },
+    { name: "바지", component: <Pants /> },
+    { name: "스커트", component: <Skirt /> },
+    { name: "아우터", component: <Outer /> },
+    { name: "원피스", component: <Onepiece /> },
+    { name: "악세사리", component: <Acc /> },
+    { name: "신발", component: <Shoe /> },
+    { name: "가방", component: <Bag /> },
+    { name: "패션 잡화", component: <Fetc /> },
   ];
 
   return (

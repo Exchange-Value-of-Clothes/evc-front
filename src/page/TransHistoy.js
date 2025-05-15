@@ -1,11 +1,11 @@
-import React,{useState}from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import CommonBox from "../style/CommonBox";
 import BackIcon from '../component/icons/BackIcon';
 import Header2 from '../component/Header2';
 import Footer from '../component/Footer';
-import Itemcard from '../component/Itemcard';
- 
+import SelectedItemCard from '../component/SelectedItemCard'
+
 function TransHistory() {
     
   return (
@@ -16,10 +16,8 @@ function TransHistory() {
                
                 
             <AppMain>
-                <Itemcard />
-                <Itemcard/>
-
-                <Itemcard />
+              <SelectedItemCard/>
+                
 
            
             </AppMain>

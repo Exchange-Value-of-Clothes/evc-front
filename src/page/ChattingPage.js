@@ -1,11 +1,10 @@
-import React, { useState ,useEffect,useRef} from 'react';
+import React, { useState ,useEffect,useRef,useCallback} from 'react';
 import styled from 'styled-components';
 import CommonBox from "../style/CommonBox";
 import BackIcon from '../component/icons/BackIcon';
 import Header2 from '../component/Header2';
-import eximg from '../asset/image/샌즈.jpg';
+import defaultImg from '../asset/image/defaultImg.png';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { ReactComponent as Selling } from "../asset/svgs/selling.svg";
 import { ReactComponent as Add } from "../asset/svgs/ProfileAdd.svg";
 import { ReactComponent as Upload } from "../asset/svgs/Upload.svg";
 import { ReactComponent as Album } from "../asset/svgs/Album.svg";
@@ -14,25 +13,47 @@ import Message from '../component/Message';
 import { useParams,useLocation } from "react-router-dom";
 import {connectToRoom,sendMessage} from '../hook/useChat'
 import {joinRoom} from '../api/chatApi'
+import { s3Img,postImg } from '../api/ItemApi';
+import ParcelModal from '../component/ParcelModal';
 
+const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
 
 function ChattingPage() {
   const { roomId } = useParams();
   const { state } = useLocation(); // navigate로 전달된 state를 받음
   const [roomData, setRoomData] = useState(state?.roomData || null);
-
+  const stompClientRef = useRef(null); // stompClient를 useRef로 관리
   const [stompClient, setStompClient] = useState(null);
   const [message, setMessage] = useState(''); // 단일 메시지를 관리하는 상태로 변경
-  const [messages, setMessages] = useState([]); // 수신된 메시지를 관리하는 배열
+  const [messages, setMessages] = useState([]);
   const [isExpanded, setIsExpanded] = useState(false); // 상태 변수로 MessageDiv 펼쳐짐 여부 관리
   const [connectionStatus, setConnectionStatus] = useState('connecting');
-  
-  
+  const [isOpen,setIsOpen]=useState(false);
+
+  const isSellMode = roomData.transactionMode === "SELL";
+  const [postData, setPostData] = useState({
+  itemType: roomData.itemType,
+  itemId: roomData.itemId,
+  buyerId: isSellMode ? 
+    (roomData.yourId === roomData.ownerId ? roomData.otherPersonId : roomData.yourId)
+    :
+    (roomData.yourId === roomData.ownerId ? roomData.yourId : roomData.otherPersonId),
+    
+  sellerId: isSellMode ? 
+    (roomData.yourId === roomData.ownerId ? roomData.yourId : roomData.otherPersonId)
+    :
+    (roomData.yourId === roomData.ownerId ? roomData.otherPersonId : roomData.yourId),
+});
+  const fileInputRef = React.useRef(null);
   const bottomRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [roomData,messages]); 
+
+  const setModal=useCallback(()=>{
+    setIsOpen((prev)=>!prev);
+  },[])
 
   // 버튼 클릭 시 펼침/접힘 토글
   const handleAddClick = () => {
@@ -56,23 +77,71 @@ function ChattingPage() {
       };
   
       setMessages((prevMessages) => [...prevMessages, newMessage]); // UI 업데이트
-      sendMessage(stompClient, message); // 서버로는 메시지만 전송
+      sendMessage(stompClient, roomData.yourId,message,timestamp); // 서버로는 메시지만 전송//id및 타임스탬프필요
       setMessage(''); // 입력란 초기화
     }
   };
   
+  const handleAddIconClick = () => {
+    fileInputRef.current.click(); // AddIcon 클릭 시 input 열기
+  };
 
+  const handleImageChange = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+  
+    const file = files[0];
+    const fileName = file.name;
+    const fileType = file.type.split('/')[1];
+  
+    try {
+      // 2. 서버에 이미지 이름 전달
+      const presignResponse = await postImg('chat',[fileName]) 
+      const [{ presignedURL, imageName }] = presignResponse
+      // 4. presignedUrl로 S3에 PUT 업로드
+      await s3Img(presignedURL, fileType, file);
+  
+      // 5. 이미지 클라우드프론트 주소 구성
+      const imageUrl = `${IMG_URL}/${imageName}`;
+  
+      // 5. 메시지 전송
+      const imageMessage = {
+        type: 'IMAGE',
+        content: imageUrl,
+      };
+      const timestamp = new Date().toISOString();
+      sendMessage(stompClient, roomData.yourId,JSON.stringify(imageMessage),timestamp);//id+타임스탬프
+  
+      // UI에 추가
+      
+      setMessages((prev) => [
+        ...prev,
+        {
+          user: 'me',
+          msg: imageUrl,
+          createdAt: timestamp,
+          isImage: true, // 이걸로 렌더링 구분
+        },
+      ]);
+
+    } catch (err) {
+      console.error('이미지 업로드 실패:', err);
+      alert('이미지 업로드에 실패했습니다.');
+    }
+  
+    // input 초기화
+    e.target.value = null;
+  };
+  
   
 useEffect(() => {
   if (!roomId) return;
-  console.log('Room data:', roomData);
 
   const fetchAdditionalRooms = async () => {
     try {
       let newRoomData = { ...roomData };
 
       while (newRoomData.hasNext) {
-        console.log('🔄 hasNext가 true이므로 joinRoom 실행:', newRoomData.cursor);
 
         // 추가 데이터 요청
         const additionalData = await joinRoom(roomId, newRoomData.cursor);
@@ -91,19 +160,44 @@ useEffect(() => {
         };
 
         setRoomData(newRoomData);
+        
       }
+      
     } catch (error) {
       console.error('❌ 추가 데이터 가져오기 실패:', error);
     }
   };
 
   fetchAdditionalRooms();
- 
+  let client;
+
   const initStompClient = async () => {
     try {
-      const client = await connectToRoom(roomId);
+      client = await connectToRoom(roomId);
+      stompClientRef.current = client;
+
       setStompClient(client);
       setConnectionStatus('connected');
+      const topicPath = `/topic/room.${roomId}`;
+      client.subscribe(topicPath, (message) => {
+        const text = message.body;
+        let payload;
+        try {
+          // JSON 형태면 객체로 파싱
+          payload = JSON.parse(text);
+        } catch (e) {
+          // 순수 텍스트면 content 프로퍼티로 감싸서 사용
+          payload = { content: text };
+        }
+        if(payload.memberId!== roomData.yourId){
+          setMessages(prev => {
+            const next = [...prev, payload];
+            return next; //현재 콘텐츠 ㅇㅇ 이런식으로와서 user msg createdAt이랑 매칭이안됨
+          });
+
+        }
+        
+      });
     } catch (error) {
       console.error('WebSocket 연결 실패:', error);
   console.error('Error details:', error.message); // error message를 출력
@@ -114,13 +208,44 @@ useEffect(() => {
   initStompClient();
 
   return () => {
-    if (stompClient) {
-      stompClient.deactivate();
+    if (stompClientRef.current) {
+      stompClientRef.current.deactivate(); // WebSocket 연결 종료
+
       setConnectionStatus('disconnected');
-      console.log('WebSocket Disconnected');
     }
   };
 }, [roomId]);
+
+useEffect(() => {
+  if (roomData?.content) {
+    const transformed = roomData.content.map((item) => ({
+      user: item.isMine ? 'me' : 'other',
+      msg: item.message,
+      createdAt: item.createdAt,
+    }));
+
+    setMessages((prev) => {
+      const alreadyExists = new Set(prev.map((m) => m.createdAt + m.msg));
+      const newOnes = transformed.filter(
+        (m) => !alreadyExists.has(m.createdAt + m.msg)
+      );
+      const updatedMessages = [...newOnes.reverse(), ...prev]; // 최신순 정렬 유지
+
+      // 스크롤은 setMessages 이후 실행되도록 타이머로 처리
+      if (updatedMessages.length > 0) {
+        setTimeout(() => {
+          bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100); // DOM 렌더링 완료 후 실행
+      }
+
+      return updatedMessages;
+    });
+  }
+}, [roomData]);
+
+
+
+
   return (
     <CommonBox>
       <PageStyle>
@@ -128,33 +253,61 @@ useEffect(() => {
 
         <ProfileBox>
           <ImgBox>
-            <ProfileImg src={eximg} alt='' />
+            <ProfileImg src={roomData.otherPersonProfileName?`${IMG_URL}/${roomData.otherPersonProfileName}` : defaultImg} alt='' />
           </ImgBox>
           <InformDiv>
             <ItemTitleDiv>
-              <ItemTitle> 거래물품 </ItemTitle>
-              <Selling />
+              <ItemTitle> {roomData.title} </ItemTitle>
             </ItemTitleDiv>
-            <PriceDiv>{(50000).toLocaleString()}</PriceDiv>
+            <PriceDiv>{(roomData.price).toLocaleString()}</PriceDiv>
           </InformDiv>
         </ProfileBox>
 
         <AppMain>
         <Chatting>
-          {
-            roomData.content.slice().reverse().map((message, index) => (
-              <MessageList key={index} user={message.isMine ? 'me' : 'other'}>
-                <Message user={message.isMine ? 'me' : 'other'} msg={message.message} time={String(message.createdAt)} />
-              </MessageList>
-            ))
+              {messages.map((message, index) => {
+        const { msg, isImage } = message;
+        let content = msg;
+        let shouldRenderImage = isImage;
+
+        if (!isImage) {
+          try {
+            const parsed = JSON.parse(msg);
+            if (parsed?.type === 'IMAGE') {
+              content = parsed.content;
+              shouldRenderImage = true;
+            }
+          } catch {
+            // 그냥 텍스트로 처리
           }
-          {messages.map((message, index) => (
-            <MessageList key={index} user={message.user}>
-              <Message user={message.user} msg={message.msg} time={message.createdAt} />
-            </MessageList>
-          ))}
-          <div ref={bottomRef} /> 
+        }
+
+        return (
+          <MessageList key={index} user={message.user}>
+            <Message
+              profile={roomData.otherPersonProfileName?`${IMG_URL}/${roomData.otherPersonProfileName}` : defaultImg}
+              user={message.user}
+              msg={
+                shouldRenderImage ? (
+                  <img
+                    src={content}
+                    alt="sent"
+                    style={{ maxWidth: '100%', borderRadius: '8px'}}
+                  />
+                ) : (
+                  content
+                )
+              }
+              time={message.createdAt}
+              
+            />
+          </MessageList>
+          );
+        })}
+
+        <div ref={bottomRef} />
         </Chatting>
+
 
         </AppMain>
 
@@ -174,16 +327,27 @@ useEffect(() => {
           {isExpanded && (
             <ExpandedContent>
               <AlbumBox>
-                <Album />
+                <Album  onClick={handleAddIconClick} />
+                <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    ref={fileInputRef}
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
+                    />
                 앨범
               </AlbumBox>
-              <LabelBox>
+              <LabelBox  onClick={setModal}>
                 <Label />
-                라벨
+                택배정보 
               </LabelBox>
             </ExpandedContent>
           )}
         </MessageDiv>
+        <ParcelModal  postData={postData}  isOpen={isOpen} close={setModal}
+        
+        />
       </PageStyle>
     </CommonBox>
   );
@@ -222,7 +386,6 @@ const ProfileBox = styled.div`
 `;
 
 const ImgBox = styled.div`
-  background-color: #F4F4F4;
   min-width: 64px;
   height: 64px;
   border-radius: 50%;
@@ -314,7 +477,7 @@ const Chatting = styled.div`
 
 `
 const MessageList=styled.div`
-    min-height: 40px;
+    
     width: 100%;
     display: flex;
     justify-content: ${({ user }) => (user ==='me' ? 'flex-end' : 'flex-start')}; 

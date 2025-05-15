@@ -1,4 +1,3 @@
-import axios from "axios";
 import api from "./intercept";
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -17,7 +16,6 @@ export const payApi = async (point) => {
         } 
       });
   
-      console.log("결제생성 성공:", response.data);
       return response.data; 
     } catch (error) {
       console.error("결제생성 실패:", error);
@@ -41,7 +39,6 @@ export const payApi = async (point) => {
           } 
       });
   
-      console.log("결제승인 성공:", response.data);
       return response.data; 
     } catch (error) {
       console.error("결제승인 실패:", error);

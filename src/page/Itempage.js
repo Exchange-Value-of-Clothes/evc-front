@@ -7,6 +7,7 @@ import {ReactComponent as Selling} from "../asset/svgs/sellingInpage.svg"
 import {ReactComponent as Time} from "../asset/svgs/Time.svg"
 import {ReactComponent as Eye} from "../asset/svgs/eye.svg"
 import {ReactComponent as Heart} from "../asset/svgs/pagesmallht.svg"
+import {ReactComponent as Ht} from '../asset/svgs/AuctionHeart.svg'
 import {ReactComponent as Chat} from "../asset/svgs/Chat_alt_2 (1).svg"
 import BackIcon from '../component/icons/BackIcon';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -17,7 +18,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {ReactComponent as Report} from "../asset/svgs/Report.svg"
 import { createRoom } from '../api/chatApi';
-import {connectToRoom} from '../hook/useChat'
+
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -35,7 +36,6 @@ function Itempage() {
 
 
   useEffect(() => {
-    console.log(id);
     fetchItem();
     
   }, [id]);
@@ -69,13 +69,12 @@ function Itempage() {
   
   const createRoomEvent = async (itemId, memberId) => {
     try {
-      const roomData = await createRoom(itemId, memberId);
+      const roomData = await createRoom(itemId,'USEDITEM', memberId);
   
       if (!roomData || !roomData.chatRoomId) {
         throw new Error("유효한 채팅방 ID를 받지 못했습니다.");
       }
   
-      console.log("채팅방 생성 성공:", roomData);
   
       const roomId = roomData.chatRoomId;
   
@@ -98,7 +97,7 @@ function Itempage() {
         <PageImgBox>
           <BackIconBox><BackIcon/></BackIconBox>
           <EtcIcon><Report/></EtcIcon>
-          <SellingIcon/>
+          
           <StyledSwiper
             pagination={{
               dynamicBullets: true,
@@ -110,25 +109,31 @@ function Itempage() {
                 <PageImg src={`${IMG_URL}/${img}`} alt={`Slide ${index + 1}`} />
               </SwiperSlide>
             ))}
+             {items.transactionStatus==="RESERVE"&& (
+            <Overlay>
+              <OverlayText>예약 중</OverlayText>
+            </Overlay>
+          )}
           </StyledSwiper>
+         
         </PageImgBox>
         <PageEtcBox>
+          <IconDiv>
+            <TransactionType>{items.transactionType==="DIRECT"?'직거래':'택배배송'}</TransactionType>
+            <Category>{items.category}</Category>
+          </IconDiv>
           <PageTitleBox><span style={{fontSize:'25px'}}>{items.title}</span></PageTitleBox>
-          <PageTextBox>
-            <Brief></Brief>
-            <EtcBox>
-              <Upload><Time/>{formatTimeAgo(items.createAt)}</Upload>
-              <Liked><Heart/>{items.likeCount}</Liked>
-              <View><Eye/>{items.viewCount}</View>
-              <Chats><Chat/>{items.chattingCount}</Chats>
-            </EtcBox>
-          </PageTextBox>
+          
+          
+          <EtcBox>
+            <Upload><Time/>{formatTimeAgo(items.createAt)}</Upload>
+            <View><Eye/>{items.viewCount}</View>
+            <Chats><Chat/>{items.chattingCount}</Chats>
+          </EtcBox>
+         
           <PriceBox>
             <Price>{(items.price).toLocaleString()}원</Price>
-            <DealButton
-            disabled={items?.isOwned}
-            onClick={() => createRoomEvent(id,items.marketMemberId)}
-            >거래하기</DealButton>
+          
           </PriceBox>
           <StoreBox>
             <ProfileBox>
@@ -140,7 +145,13 @@ function Itempage() {
         </PageEtcBox>
         <DescriptBox>{items.content}</DescriptBox>
       </PageMain>
-      <Footer/>
+      <DealDiv>
+        <Liked><HtIcon/>{items.likeCount}</Liked>
+        <DealButton
+          disabled={items?.isOwned ||items.transactionStatus==='RESERVE'}
+          onClick={() => createRoomEvent(id,items.marketMemberId)}
+        >거래하기</DealButton>
+      </DealDiv>
 
       <StyledModal
         isOpen={modalIsOpen}
@@ -220,48 +231,35 @@ const EtcIcon=styled.div`
  
   z-index: 2;
 `
-const SellingIcon = styled(Selling)`
-  position: absolute;
-  bottom: 10px;
-  right:15px;
-  width: 12%;
-  height: 12%;
-  z-index: 2;
-`
+
 const PageEtcBox=styled.div`
   width: 100%;
-  height: 30%;  
-  min-height: 250px;
+  height: 228px;  
   border-bottom: solid 1px #4A4A4A;
+  padding: 16px;
+  box-sizing: border-box;
+  gap: 8px;
 
 `
 const PageTitleBox=styled.div`
   display: flex;
   justify-content: space-between;
-  padding:15px;
+ 
   font-family: 'NeoEB',sans-serif;
   font-size: 20px;
 `
-const PageTextBox=styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding: 0 15px;
 
-`
-const Brief=styled.div`
-  font-size: 16px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  overflow-x: scroll;
-  scrollbar-width: none;
-  font-family: 'NeoEB',sans-serif;
- 
-`
 const EtcBox=styled.div`
-  width: 40%;
+  width: 100%;
   display: flex;
-  justify-content: space-between;
+  
+  > *:not(:last-child) {
+    /* 세로선 */
+    border-right: 1px solid #868686;
+    /* 텍스트랑 선 사이 간격 */
+    padding-right: 8px;
+    margin-right: 8px;
+  }
 
 `
 const Upload=styled.span`
@@ -272,20 +270,27 @@ const Upload=styled.span`
   font-family: 'NeoM',sans-serif;
 
 `
-const Liked=styled.span`
+const Liked=styled.div`
   color: #919191;
   font-size: 12px;
   display: flex;
   gap: 3px;
   font-family: 'NeoM',sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 80%;
+  width: 60px;
 
 `
-const View=styled.span`
+const View=styled.div`
  color: #919191;
  font-size: 12px;
  display: flex;
  gap: 3px;
  font-family: 'NeoM',sans-serif;
+ align-items: center;
 
 `
 const Chats=styled.span`
@@ -301,8 +306,6 @@ const PriceBox=styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  margin-top: 10px;
   height: 17%;
 `
 const Price=styled.span`
@@ -312,30 +315,38 @@ const Price=styled.span`
 `
 const DealButton=styled.button`
   color:#F4F4F4;
-  background-color: #444448;
+  background-color: ${({ status }) =>
+    status === 'RESERVE' ? '#888888' : '#24D56D'};
   border-radius: 8px;
-  width: 20%;
+  width: 80%;
   height: 100%;
   border: none;
   font-family: 'NeoM',sans-serif;
   font-size: 16px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+
+  
 
 `
 const StoreBox=styled.div`
   background-color:#2C2C2E ;
-  margin: 3% auto;
-  width: 87%;
+  margin-top: 1%;
+  width: 100%;
   padding: 16px;
-  height: 20%;
+  height: 72px;
   border-radius:8px;
   display: flex;
   gap: 5%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
 
 `
 const ProfileBox=styled.div`
   background-color: #F4F4F4;
-  width:  14%; 
-  height: 100%; 
+  width: 54px ;
+  height: 54px; 
   border-radius: 50%; 
   display: flex; 
   align-items: center; 
@@ -351,15 +362,17 @@ const Profile=styled.img`
 `
 const StoreName=styled.div`
   font-size: 18px;
-  font-size: 18px;
+  
   color: #F4F4F4;
-  margin-right:40%;
-  margin-top: 3%;
+  
+ 
+  display: flex;
+  align-items: center;
 `
 const DescriptBox=styled.div`
   padding: 16px;
   color: #F4F4F4;
-  font-size: 16px;
+  font-size: 20px;
   font-family: 'NeoM',sans-serif;
 `
 const StyledSwiper = styled(Swiper)`
@@ -419,10 +432,69 @@ const ModalImg=styled.img`
   height: 100%;
   object-fit: cover; 
 `
-const StorelikedDiv=styled.div`
+
+const DealDiv=styled.div`
+  width: 100%;
+  height: 90px;
+  background-color: #2C2C2E;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px 16px 16px;
+  box-sizing: border-box;
+`
+const HtIcon = styled(Ht)`
+  width: 28px;
+  height: 25px;
+
+`;
+
+const IconDiv=styled.div`
+  width: 100%;
+  display: flex;
+  gap: 2px;
+`
+const TransactionType= styled.div`
+  width: 59px;
+  height: 24px;
+  background-color: #16FF00;
+  font-family: 'NeoM',sans-serif;
+  color: #1C1C1E;
+  font-size: 12px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  border:none;
+  border-radius: 4px;
+`
+const Category= styled.div`
+  width: 48px;
+  height: 24px;
+  background-color: #444448;
+  font-family: 'NeoM',sans-serif;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border:none;
+  border-radius: 4px;
+
+`
+const Overlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color:#00000070;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+`
+
+const OverlayText = styled.div`
+  color: white;
+  font-size: 18px;
+  font-family: 'NeoEB',sans-serif;
 `

@@ -4,9 +4,10 @@ import CommonBox from "../style/CommonBox";
 import BackIcon from '../component/icons/BackIcon';
 import Header2 from '../component/Header2';
 import Footer from '../component/Footer';
-import eximg from '../asset/image/샌즈.jpg'
+import defaultImg from '../asset/image/defaultImg.png'
 import {ReactComponent as RightArrow} from "../asset/svgs/Rightarrow.svg"
 import {ReactComponent as Card} from "../asset/svgs/Creditcard.svg"
+import {ReactComponent as DanChu} from "../asset/svgs/DanChu.svg"
 import {ReactComponent as Bill} from "../asset/svgs/Bill.svg"
 import {ReactComponent as Ht} from "../asset/svgs/MyPageHt.svg"
 import {ReactComponent as Boxes} from "../asset/svgs/Boxes.svg"
@@ -14,10 +15,15 @@ import { Link ,useNavigate} from 'react-router-dom';
 import { useState,useCallback } from 'react';
 import PointReturnModal from '../component/PointReturnModal'
 import PointAddModal from '../component/PointAddModal'
+import useFetchUser from '../hook/useFetchUser';
+import { logoutApi } from '../api/authApi';
+
+const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
 
 function MyPage() {
     const navigate = useNavigate();
-
+    const { userInfo, fetchUser } = useFetchUser();
+   
     const [openReturn,setOpenReturn]=useState(false);
     const setModalReturn=useCallback(()=>{
         
@@ -30,29 +36,44 @@ function MyPage() {
         setOpenAdd((prev)=>!prev);
             
     },[])
+    const logout = async () => {
+        try {
+          await logoutApi(); // 서버에 로그아웃 요청
+        } catch (error) {
+          console.error('서버 로그아웃 실패:', error);
+          // 서버 오류가 나도 클라이언트 로그아웃은 계속 진행
+        } finally {
+          localStorage.removeItem('LoginState');
+          localStorage.removeItem('searchHistory');
+          localStorage.removeItem('searchHistory_auc');
+          navigate('/login');
+        }
+      };
   
   return (
     <CommonBox >
         <PageStyle>
-           <Header2 title={"마이페이지"} icon={<BackIcon/>}></Header2>
+           <Header2 title={"마이페이지"} icon={<BackIcon/>} ></Header2>
             <AppMain>
                 <ProfileBox>
                     <ImgBox>
-                        <ProfileImg src={eximg} alt=''/>
+                        <ProfileImg src={userInfo.imageName?`${IMG_URL}/${userInfo.imageName}` : defaultImg} alt=''/>
                     </ImgBox>
                     <Profile>
-                        <ProfileName><span style={{fontSize:'20px'}}>닉네임</span> 
-                        <Link to={'/whostore'} style={{display:'flex', textDecoration: "none",color:'white'}}>
+                        <ProfileName><span style={{fontSize:'20px'}}>{userInfo.nickname}</span> 
+                        <Link to={'/whostore'} 
+                        state={{ profileImg: userInfo.imageName ? `${IMG_URL}/${userInfo.imageName}` : defaultImg }}
+                        style={{display:'flex', textDecoration: "none"}}>
                             <ArrowIcon/>                
                         </Link>
                         </ProfileName>
-                        <ProfileEtc> <Postspan >게시물 <span>{0}</span></Postspan></ProfileEtc>
+                        <ProfileEtc> <Postspan > <span>{}</span></Postspan></ProfileEtc>{/*여기도 안쓸듯*/}
                     </Profile>
                 </ProfileBox>
 
                 <PointBox>
-                    <PointDiv><span style={{fontSize:'20px'}}>단추 포인트</span><CardIcon/></PointDiv>
-                    <Point><span style={{fontSize:'20px'}}>{(50000).toLocaleString()}</span></Point>
+                    <PointDiv><DanchuIcon/><span style={{fontSize:'20px'}}>단추 포인트</span></PointDiv>
+                    <Point><span style={{fontSize:'20px'}}>{(userInfo.point).toLocaleString()}</span></Point>
                     <ButtonDiv>
                         <AccountButton > 계좌 관리  </AccountButton>
                         <ChargeButton onClick={setModalAdd}> 충전하기 </ChargeButton>
@@ -71,9 +92,12 @@ function MyPage() {
                                 <Ht/> 관심목록
                             </WatchListBox>
                         </Link>
-                        <TrackingBox>
-                            <Boxes/> 배송조회
-                        </TrackingBox>
+                        <Link to={'/ParcelFind'}  style={{textDecoration:'none'}}>
+                            <TrackingBox>
+                                <Boxes/> 배송조회
+                            </TrackingBox>
+                        </Link>
+                      
                     </BoxDiv>
                 </LinkBox>
 
@@ -82,11 +106,12 @@ function MyPage() {
                     
                     <EtcDiv>
                         <ProfileSetting><Link to={'/profilesetting'} style={{textDecoration:'none'}}>프로필 수정</Link></ProfileSetting>
-
+                        <InfoSet><Link to={'/InfoSet'} style={{textDecoration:'none'}}>개인정보 작성</Link></InfoSet>
                         <Announcement>공지사항</Announcement>
                         <Question>자주 묻는 질문</Question>
                         <Inquiry>1:1 문의</Inquiry>
                         <Service>서비스 정보</Service>
+                        <Logout onClick={logout}>로그아웃</Logout>
                     </EtcDiv>
              
                 </EtcBox>
@@ -160,7 +185,6 @@ const EtcBox = styled.div`
 
 `
 const ImgBox=styled.div`
-    background-color: #F4F4F4;
     width:  80px;
     height: 80px;
     @media (max-height: 700px){
@@ -224,10 +248,11 @@ const ProfileSetting=styled.div`
 const EtcDiv=styled.div`    
     border-bottom: solid 1px #4A4A4A;
     width: 100%;
-    height: 200px;
+    
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+    gap:16px;
 
 
 `
@@ -262,8 +287,8 @@ const ProfileName=styled.div`
 const ProfileEtc=styled.div`
 
 `
-const CardIcon=styled(Card)`
-    margin-left: 2%;
+const DanchuIcon=styled(DanChu)`
+    margin-right: 2%;
     margin-bottom: 1%;
 
 `
@@ -273,6 +298,7 @@ const AccountButton = styled.button`
     border-radius: 8px;
     width: 30%;
     font-size: 16px;
+    cursor: pointer;
 `
 const ChargeButton = styled.button`
     background-color: #444448;
@@ -280,6 +306,8 @@ const ChargeButton = styled.button`
     border-radius: 8px;
     width: 30%;
     font-size: 16px;
+    cursor: pointer;
+
 
 `
 const RefundButton = styled.button`
@@ -288,6 +316,8 @@ const RefundButton = styled.button`
     border-radius: 8px;
     width: 30%;
     font-size: 16px;
+    cursor: pointer;
+
 
 `
 const BoxDiv=styled.div`
@@ -313,6 +343,8 @@ const HistoryBox=styled.div`
     align-items: center;
     justify-content: center;
     gap: 4px;
+    cursor: pointer;
+
 `
 const WatchListBox=styled.div`
     width: 100px;
@@ -325,6 +357,7 @@ const WatchListBox=styled.div`
     align-items: center;
     justify-content: center;
     gap: 4px;
+    cursor: pointer;
 
 `
 const TrackingBox=styled.div`
@@ -338,6 +371,19 @@ const TrackingBox=styled.div`
     align-items: center;
     justify-content: center;
     gap: 4px;
+    cursor: pointer;
+
+`
+
+const InfoSet=styled.div`
+    font-family: 'NeoEB',sans-serif;
+    font-size: 16px;
+`
+
+const Logout=styled.div`
+     font-family: 'NeoEB',sans-serif;
+     font-size: 16px;
+     cursor: pointer;
 
 `
 

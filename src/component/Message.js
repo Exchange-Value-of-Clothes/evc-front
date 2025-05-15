@@ -3,13 +3,13 @@ import styled from 'styled-components'
 import eximg from '../asset/image/샌즈.jpg'
 import {formatTime} from '../util/formatTime'
 
-
-function Message({user,msg,time}) {
+function Message({profile,user,msg,time}) {
+    
   return (
     <MessageForm isMe={user==='me'}>
         {user!=='me'&&
         (<MessageProfile>
-            <ProfileImg src={eximg} alt='' />
+            <ProfileImg src={profile||eximg} alt='' />
         </MessageProfile>)
         }
         <MessageText isMe={user === 'me'}>
@@ -17,9 +17,7 @@ function Message({user,msg,time}) {
         </MessageText>
         
         <SendTimeDiv>
-            <IsRead isMe={user === 'me'}>
-                1
-            </IsRead>
+            
             <SendTime isMe={user === 'me'}>{formatTime(time)}</SendTime>
         </SendTimeDiv>
         
@@ -31,6 +29,7 @@ export default Message
 
 const MessageForm=styled.div`
     max-width: 85%;
+    height: 100%;
     display: flex;
     gap: 8px;
     
@@ -56,7 +55,15 @@ const MessageText=styled.div`
     font-family: 'NeoSB',sans-serif;
     border-radius: 4px;
     max-width: 70%;
-    overflow-wrap: break-word; /* 긴 단어가 넘칠 경우 줄바꿈 */
+    
+    overflow-wrap: break-word; 
+    img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    display: block;
+  }
      
 `
 const SendTimeDiv=styled.div`
@@ -74,10 +81,4 @@ const SendTime=styled.span`
     display: flex;
     justify-content: ${({ isMe }) => (isMe ? 'end' : 'start')}; 
 
-`
-const IsRead=styled.div`
-    color: #FFD527;
-    font-size: 10px;
-    display: flex;
-    justify-content: ${({ isMe }) => (isMe ? 'end' : 'start')}; 
 `

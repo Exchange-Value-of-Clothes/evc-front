@@ -17,8 +17,7 @@ const PaySuccess = () => {
     const confirmPayment = async () => {
       try {
         if (orderId && paymentKey && amount) {
-          const res = await payConfirmApi(orderId, paymentKey, amount);  // API 호출
-          console.log(res); // 성공적인 응답 확인
+          await payConfirmApi(orderId, paymentKey, amount);  // API 호출
 
           // 성공 시, 마이 페이지로 이동
           navigate('/mypage');

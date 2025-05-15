@@ -26,3 +26,5 @@ yarn-error.log*
 # Skip localhost SSL certificates
 localhost.pem
 localhost-key.pem
+
+setupProxy.js

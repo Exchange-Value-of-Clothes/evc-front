@@ -9,18 +9,14 @@ function Social() {
 
   useEffect(() => {
     const fetchAccessToken = async () => {
-      console.log("소셜성공");
 
       if (window.location.pathname === "/social-login-success") {
-        console.log("찾았다");
 
         try {
           const data = await refreshAccessToken();
-          console.log(data);
 
           localStorage.setItem('LoginState', true);
           const { accessToken } = data;
-          console.log(accessToken);
           
           setAccessToken(accessToken);
           navigate('/home',accessToken);

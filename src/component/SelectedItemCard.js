@@ -1,13 +1,12 @@
 import React from 'react'
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import {ReactComponent as Selling} from "../asset/svgs/selling.svg"
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import ex from '../asset/image/샌즈.jpg'
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import {ReactComponent as Used} from "../asset/svgs/Used.svg"
+import StateIcon from './icons/StateIcon';
 
 
 function Itemcard({item, onClick }) {
@@ -15,7 +14,7 @@ function Itemcard({item, onClick }) {
     const navigate = useNavigate();
   
     const handleCardClick = () => {
-      navigate(`/item/${item.usedItemId}`); //  
+      navigate(`/item/${item.usedItemId}`); //  추후수정
     }
     const formatTimeAgo=(date)=> {
       
@@ -34,7 +33,7 @@ function Itemcard({item, onClick }) {
           <CardTitleDiv>
             <Title>{'샌즈'}</Title> {/* 아이템 제목 표시 */}
             <IconsDiv>
-              <Used />
+              <StateIcon color='#16FF00' text='경매' /> {/*추후수정*/}
            
                 <Extrabutton onClick={onClick}>
                   <MoreVertIcon/>
@@ -148,9 +147,7 @@ const CardPriceDiv = styled.div`
   justify-content: space-between;
 
 `
-const SellingIcon =styled(Selling)`
 
-`
 const CardLiked = styled.div`
   color: white;
   display: flex;

@@ -1,18 +1,18 @@
 import api from "./intercept";
 
-const _csrf = '6L-FBgg8LOZVEopW09FaWZR_Ns0-rtJsNcuCN8x6b_iLGTdE2d29NGoEG9B4I7Ni5_xubKNLG6xal7RBAfqyDqlJCcq9KVYl HTTP/1.1'
-
-
-export const getRooms = async()=>{
+export const getRooms = async(cursor)=>{
     try{
         const res = await api({
             method: "get",
             url: `/api/chat`,
           
             withCredentials:true,
+            params:{
+                cursor:cursor
+
+            }
         })
         
-        console.log("채팅방 목록가져옴",res)
         return res.data;
         
     } 
@@ -21,14 +21,16 @@ export const getRooms = async()=>{
     }
 };
 
-export const createRoom = async(ItemId,ItemOwnerId)=>{
+export const createRoom = async(ItemId,kind,ItemOwnerId)=>{
     try{
         const res = await api({
             method: "post",
             url: `/api/chat`,
            
             data:{
-                usedItemId:ItemId,
+                itemId:ItemId,
+                
+                itemType:kind,
                 ownerId:ItemOwnerId
 
             },
@@ -53,7 +55,6 @@ export const joinRoom = async(RoomId,date_cursor)=>{
 
            
         })
-        console.log('방입장',res)
         return res.data;
     }catch(err){
         console.err('채팅방 생성실패.',err);
@@ -69,10 +70,30 @@ export const exitRoom = async(RoomId)=>{
 
            
         })
-        console.log('방퇴장',res)
         return res.data;
     }catch(err){
         console.err('퇴장실패.',err);
+    }
+};
+
+export const makePost = async(data)=>{
+    try{
+        const res = await api({
+            method: "post",
+            url: `/api/deliveries`,
+            withCredentials:true,
+            data:{
+                itemType:data.itemType,
+                itemId:data.itemId,
+                buyerId:data.buyerId,
+                sellerId:data.sellerId,
+            }
+           
+        })
+        console.log('배송생성',res)
+        return res.data;
+    }catch(err){
+        console.err('배송생성실패.',err);
     }
 };
 
