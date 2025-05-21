@@ -61,8 +61,8 @@ function MyPage() {
                     </ImgBox>
                     <Profile>
                         <ProfileName><span style={{fontSize:'20px'}}>{userInfo.nickname}</span> 
-                        <Link to={'/whostore'} 
-                        state={{ profileImg: userInfo.imageName ? `${IMG_URL}/${userInfo.imageName}` : defaultImg }}
+                        <Link to={`/whostore/mystore`} 
+                        state={{ profileImg: userInfo.imageName ? `${IMG_URL}/${userInfo.imageName}` : defaultImg,who:'나' }}
                         style={{display:'flex', textDecoration: "none"}}>
                             <ArrowIcon/>                
                         </Link>

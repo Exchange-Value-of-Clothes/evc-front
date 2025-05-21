@@ -5,22 +5,39 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import StateIcon from './icons/StateIcon';
-
+import LikedIcon from './icons/LikedIcon';
 const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
+/*추가로 할거 목록 
 
-function Itemcard({item,imgName, extraIcon, onClick,isAuc }) {
+xx의상점에 프사 url추가되면 추가 (중고,경매 개별페이지)
+
+중고상품 수정 api
+경매상품 수정 api
+
+*/
+function Itemcard({item,imgName, extraIcon, onClick,isAuc,id2,isliked }) {
     const navigate = useNavigate();
+    const ids = isAuc ? (id2 || item.auctionItemId) : (id2 || item.usedItemId);
     const handleCardClick = () => {
-      if(isAuc===true){
-        navigate(`/auction_item/${item.auctionItemId}`,{
+      if(isAuc==='AUCTION'){
+        
+        navigate(`/auction_item/${ids}`,{
           state:{
           startPrice:item.price,
-          id:item.auctionItemId,
+          id:ids,
+          initialCounts:item.likeCount,
+          isLiked:item.isLike||isliked
+
           }
         }); 
       }
       else{
-        navigate(`/item/${item.usedItemId}`); 
+        navigate(`/item/${ids}`,{
+          state:{
+          initialCounts:item.likeCount,
+          isLiked:item.isLike||isliked
+          }
+        }); 
       }
     }
     const formatTimeAgo=(date)=> {   
@@ -60,8 +77,12 @@ function Itemcard({item,imgName, extraIcon, onClick,isAuc }) {
           <CardUploadTime>{formatTimeAgo(item.createAt) || "00:00"}</CardUploadTime> {/* 업로드 시간 표시 */}
           <CardPriceDiv>{(item.price).toLocaleString()}원
           <CardLiked>
-            <FavoriteBorderIcon />
-            {item.likeCount || 0} {/* 좋아요 수 */}
+            <LikedIcon itemId={isAuc===true?item.auctionItemId||item.itemId :item.usedItemId||item.itemId}
+            itemType={isAuc===true?'AUCTIONITEM':'USEDITEM'}
+            initialLiked={isliked||item.isLike}
+            initialCount={item.likeCount}
+            />
+           
           </CardLiked>
             </CardPriceDiv> {/* 가격 표시 */}
           

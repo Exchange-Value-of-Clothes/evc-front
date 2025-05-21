@@ -6,12 +6,13 @@ import Header2 from '../component/Header2';
 import EtcIcon from '../component/icons/EtcIcon';
 import Footer from '../component/Footer';
 import SlidingPanel from '../component/Sliding';
-import { useLocation } from "react-router-dom";
+import { useLocation,useParams } from "react-router-dom";
 import usePageFilterStore from '../store/filterStore';
 import Filter from '../component/Filter';
 import Itemcard from "../component/Itemcard";
 import { useInView } from "react-intersection-observer";
-import { getMyitem,getMyAuc } from '../api/ItemApi';
+import { getMyitem,getMyAuc,getWhoAuc,getWhoitem } from '../api/ItemApi';
+import eximg from '../asset/image/defaultImg.png'
 
 function WhoStore() {
     const hasCalledRef = useRef(false);
@@ -30,65 +31,83 @@ function WhoStore() {
     const [isLast, setIsLast] = useState(false);
     const [count,setCount] =useState(0);
     const profileImg = location.state?.profileImg;
+    const whos = location.state?.who;
+    const memberId = location.state?.id;
     const [selectedItemId, setSelectedItemId] = useState(null); 
     const [kind,setKind] = useState('');
+    const [status,setStatus] = useState('');
+    const { storeType } = useParams();
 
 
-  const togglePanel = (e,kind,itemId) => {
+
+  const togglePanel = (e,kind,itemId,status) => {
     e.stopPropagation();
     setSelectedItemId(itemId); 
     setKind(kind)
+    setStatus(status)
     setIsPanelOpen(!isPanelOpen);
   };
   const handleClosePanel = () => {
   setIsPanelOpen(false);
 };
-  const fetchItems = async () => {
-    if (isFetching || isLast) return;
-  
-    setIsFetching(true);
-    try {
-      let data;
-      let content = [];
-      let nextCursor = null;
-      let hasNext = false;
-  
-      if (selectedFilter === 'ALL' || selectedFilter === 'BUY' || selectedFilter === 'SELL') {
-        const mode = selectedFilter === 'ALL' ? null : selectedFilter;
-        data = await getMyitem(cursor, mode);
-        if (data?.myOrMemberUsedItems?.content && Array.isArray(data.myOrMemberUsedItems.content)) {
-          content = data.myOrMemberUsedItems.content;
-          nextCursor = data.cursor;
-          hasNext = data.hasNext;
-          setCount(data.postItemCount)
-        }
-      } else if (selectedFilter === 'AUCTION') {
-        data = await getMyAuc(cursor);
-        if (data?.myOrMemberAuctionItems?.content && Array.isArray(data.myOrMemberAuctionItems.content)) {
-          content = data.myOrMemberAuctionItems.content;
-          nextCursor = data.cursor;
-          hasNext = data.hasNext;
-          setCount(data.postItemCount)
-        }
+const fetchItems = async () => {
+  if (isFetching || isLast) return;
+
+  setIsFetching(true);
+
+  try {
+    let data;
+    let content = [];
+    let nextCursor = null;
+    let hasNext = false;
+
+    const isMyStore = storeType === 'mystore';
+
+    if (['ALL', 'BUY', 'SELL'].includes(selectedFilter)) {
+      const mode = selectedFilter === 'ALL' ? null : selectedFilter;
+      data = isMyStore
+        ? await getMyitem(cursor, mode)
+        : await getWhoitem(cursor, mode, memberId);
+
+      const result = data?.myOrMemberUsedItems;
+      if (result?.content && Array.isArray(result.content)) {
+        content = result.content;
+        nextCursor = data.cursor;
+        hasNext = data.hasNext;
+        setCount(data.postItemCount);
       }
-  
-      if (content.length > 0) {
-        setCursor(nextCursor);
-        setItems(prevItems => [...prevItems, ...content]);
+    } else if (selectedFilter === 'AUCTION') {
+      data = isMyStore
+        ? await getMyAuc(cursor)
+        : await getWhoAuc(cursor, memberId);
+
+      const result = data?.myOrMemberAuctionItems;
+      if (result?.content && Array.isArray(result.content)) {
+        content = result.content;
+        nextCursor = data.cursor;
+        hasNext = data.hasNext;
+        setCount(data.postItemCount);
       }
-  
-      if (!hasNext) {
-        setIsLast(true);
-      }
-  
-    } catch (err) {
-      console.error("아이템 요청 실패", err);
-    } finally {
-      setIsFetching(false);
-      hasCalledRef.current = false;
     }
-  };
-  
+
+    // 데이터가 실제로 있다면 추가
+    if (content.length > 0) {
+      setCursor(nextCursor);
+      setItems(prevItems => [...prevItems, ...content]);
+    }
+
+    // 데이터가 없거나 hasNext가 false일 경우 요청 중단
+    if (content.length === 0 || !hasNext) {
+      setIsLast(true);
+    }
+  } catch (err) {
+    console.error("❌ 아이템 요청 실패:", err);
+  } finally {
+    setIsFetching(false);
+    hasCalledRef.current = false;
+  }
+};
+
   
   const filteredItems = items.filter((item) => {
     if (selectedFilter === 'ALL') return true;
@@ -128,15 +147,27 @@ function WhoStore() {
         appMainRef.current.scrollTop = pos;
       }
     }, [selectedFilter]);
+  useEffect(() => {
+  if (isPanelOpen) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'auto';
+  }
+
+  return () => {
+    document.body.style.overflow = 'auto';
+  };
+}, [isPanelOpen]);
     
   return (
     <CommonBox ref={targetRef}>
+      {isPanelOpen && <Overlay onClick={handleClosePanel} />}
         <PageStyle>
-            <Header2 title={"상점"} icon={<BackIcon/>}></Header2>
+            <Header2 title={`${whos}의 상점`} icon={<BackIcon/>}></Header2>
            
                 <ProfileBox>
                     <ImgBox>
-                        <ProfileImg src={profileImg} alt=''/>
+                        <ProfileImg src={profileImg?profileImg:eximg} alt=''/>
                     </ImgBox>
                     <Profile>  {/*여기도 버릴수도*/}
                         <PostCount>
@@ -154,10 +185,18 @@ function WhoStore() {
                 {filteredItems.length > 0 ? (
                     filteredItems.map(item => (
                         <Itemcard 
-                         onClick={(e) => togglePanel(e,item.transactionMode === "AUCTION" ?'AUCTION':'USEDITEM' ,item.transactionMode === "AUCTION" ? item.auctionItemId : item.usedItemId)}
+                         onClick={(e) => togglePanel(e,item.transactionMode === "AUCTION" ?'AUCTION':'USEDITEM' ,
+                          item.transactionMode === "AUCTION" ? item.auctionItemId : item.usedItemId,
+                        item.transactionStatus
+                        )}
                           key={item.transactionMode === "AUCTION" ? item.auctionItemId : item.usedItemId}
                           item={item}
-                          imgName={item.imageName} extraIcon={<EtcIcon/>} isAuc={selectedFilter === 'AUCTION'} />
+                          imgName={item.imageName} 
+                          extraIcon={
+                            location.pathname === "/whostore/mystore" ? <EtcIcon /> : undefined
+                          }
+                          isAuc={item.transactionMode} 
+                          id2={item.transactionMode === "AUCTION" ? item.auctionItemId : item.usedItemId}/>
                     ))
                     ) : (
                     <p>아이템이 없습니다.</p>
@@ -166,7 +205,8 @@ function WhoStore() {
                 {!isLast && <div ref={ref}></div>}
            
                 <SlidingPanel isOpen={isPanelOpen} onClose={handleClosePanel} targetRef={targetRef}
-                itemId={selectedItemId} kinds={kind} />
+                itemId={selectedItemId} kinds={kind}
+                transactionStatus={status} />
             </AppMain>
             <Footer/>
         </PageStyle>
@@ -235,3 +275,11 @@ const Profile=styled.div`
     font-size: 14px;
 
 `
+const Overlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9; /* 슬라이딩 패널 바로 아래 또는 위 */
+`;

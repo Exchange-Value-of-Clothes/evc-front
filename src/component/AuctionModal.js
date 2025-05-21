@@ -6,7 +6,7 @@ import {ReactComponent as BackArrow} from "../asset/svgs/Back.svg"
 import PointAddModal from './PointAddModal';
 import {sendPrice} from '../hook/useChat'
 
-const PointModal=({isOpen,close,id, stompClient })=> {
+const PointModal=({isOpen,close,id, stompClient,bidprice,myPoint })=> {
     const modalRoot = document.getElementById('portal');
     const [isOpenAdd,setIsOpenAdd]=useState(false);
     const setModalAdd=useCallback(()=>{
@@ -48,17 +48,23 @@ const PointModal=({isOpen,close,id, stompClient })=> {
                 <Span0>{'경매하기'}</Span0> 
             </ModalHeader>
             <ContentDiv>
-              <PointInput placeholder='얼마나 사용할까요?' name="addPrice" value={addPrice} onChange={handlePriceChange}/>
-              <Sspan> 호가 단위로 추가하여 입력해주세요</Sspan>  {/*이거 호가 프롭스로넣기수정필요 */}
+              <PointInput 
+              placeholder='입찰 금액을 입력해주세요'
+              name="addPrice" 
+              value={addPrice} 
+              onChange={handlePriceChange}/>
+              <Sspan> {`최소 ${bidprice}포인트 이상으로 입찰해주세요`}</Sspan>  {/*이거 호가 프롭스로넣기수정필요 */}
               <Sdiv>
-              <CurrentPoint>현재 보유량 {(230000).toLocaleString()}</CurrentPoint>
+              <CurrentPoint>현재 보유량 {myPoint.toLocaleString()}</CurrentPoint>
               </Sdiv>
             
 
             </ContentDiv>
             <ButtonDiv>
             <Button1 onClick={setModalAdd}>포인트 충전하기</Button1>
-            <Button2 onClick={handleSendPrice}>입찰하기</Button2>
+            <Button2 onClick={handleSendPrice}
+             disabled={Number(addPrice) < Number(bidprice)}
+            >입찰하기</Button2>
               
             </ButtonDiv>
             
@@ -161,14 +167,14 @@ const CurrentPoint=styled.span`
 const Button1=styled.button`
   width: 48%;
   height: 53px;
-  background-color: #757575;
+  background-color: #08AC72;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.1s ease;
 
   &:hover {
-    background-color:rgb(44, 44, 44);
+    background-color:#45a049;
   }
 
 
@@ -187,6 +193,12 @@ const Button2=styled.button`
     background-color: #45a049;
   }
 
-  
+ &:disabled {
+    background-color: rgb(122, 122, 122);;
+    cursor: not-allowed;
+  }
 
-`
+  &:disabled:hover {
+    background-color: rgb(122, 122, 122);; /* hover 시에도 회색 유지 */
+  }
+`;

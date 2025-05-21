@@ -40,7 +40,7 @@ const MessageProfile=styled.div`
     min-width: 36px;
     max-height: 36px;
     max-width: 36px;
-    background-color: white;
+   
     border-radius: 50%;
     overflow: hidden;
 `

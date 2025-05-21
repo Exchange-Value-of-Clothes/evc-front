@@ -49,7 +49,7 @@ function ChatPage() {
     const response1 = await fetchRooms(cursor);
 
     // 두 번째 호출, 첫 번째 응답에서 받은 cursor 사용
-    if (response1 && response1.cursor) {
+    if (response1 && response1.cursor&&response1.hasNext) {
       await fetchRooms(response1.cursor);
     }
   };
@@ -62,7 +62,7 @@ function ChatPage() {
 
   
 
- const fetchRooms = async (cursorParam = cursor) => {
+  const fetchRooms = async (cursorParam = cursor) => {
   if (isFetching || isLast) return;
 
   setIsFetching(true);

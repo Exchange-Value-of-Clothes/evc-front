@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { deleteAuc,deleteUsed,editUsed } from '../api/ItemApi';
 
-const SlidingPanel = ({ isOpen, onClose, targetRef,itemId,kinds }) => {
+const SlidingPanel = ({ isOpen, onClose, targetRef,itemId,kinds,transactionStatus }) => {
   const [panelSize, setPanelSize] = useState({ width: 0, height: 0 });
-
+  const navigate =useNavigate();
   useEffect(() => {
     if (targetRef.current) {
       const { clientWidth, clientHeight } = targetRef.current;
@@ -33,19 +34,46 @@ const SlidingPanel = ({ isOpen, onClose, targetRef,itemId,kinds }) => {
       
     }
   };
+ const handleStatus = async (Status, e) => {
+  e?.preventDefault();
+  e?.stopPropagation();
+
+  if (!itemId) return;
+
+  try {
+    await editUsed(itemId, Status);
+    console.log('상태변경성공');
+    window.location.reload();
+    onClose();
+  } catch (err) {
+    console.error('상태 변경 실패:', err);
+  }
+};
+
+const editPost=(e,type)=>{
+  e?.preventDefault();
+  e?.stopPropagation();
+  navigate('/EditPage',{
+    state:{
+      itemType:type,
+      itemsId:itemId
+    }
+  })
+
+}
 
   return (
     <Panel $isOpen={isOpen} size={panelSize}>
       <Content>
        
-        <UtilDiv>
-          <ItemStateDiv>
-            예약중
-          </ItemStateDiv>
-          <CheckDiv>
-            거래완료
-          </CheckDiv>
-          <CorrectionDiv>
+       {kinds==='AUCTION'?(
+        <>
+        <UtilDiv isAuction={kinds === 'AUCTION'}>
+         
+         
+         
+          
+          <CorrectionDiv onClick={(e)=>{editPost(e,'AUCTION')}}>
             게시물 수정
           </CorrectionDiv>
           <DeleteDiv onClick={handleDelete}>
@@ -56,6 +84,60 @@ const SlidingPanel = ({ isOpen, onClose, targetRef,itemId,kinds }) => {
         <CloseDiv>
           <Close onClick={onClose}>취소</Close>
         </CloseDiv>
+        </>
+       ):(<>
+       <UtilDiv isAuction={kinds === 'AUCTION'}>
+          {transactionStatus === 'ONGOING' && (
+            <>
+              <ItemStateDiv onClick={(e) => handleStatus('RESERVE', e)}>
+                예약중
+              </ItemStateDiv>
+              <CheckDiv onClick={(e) => handleStatus('COMPLETE', e)}>
+                거래완료
+              </CheckDiv>
+            </>
+          )}
+
+          {transactionStatus === 'RESERVE' && (
+            <>
+              <ActiveDiv 
+                  onClick={(e) => handleStatus('ONGOING', e)}
+                  style={{ 
+                    borderTopLeftRadius: 16,
+                    borderTopRightRadius: 16
+                  }}     
+                >
+                거래활성화
+              </ActiveDiv>
+              <CheckDiv onClick={(e) => handleStatus('COMPLETE', e)}>
+                거래완료
+              </CheckDiv>
+            </>
+          )}
+
+          {transactionStatus === 'COMPLETE' && (
+            <>
+              <ItemStateDiv onClick={(e) => handleStatus('RESERVE', e)}>
+                예약중
+              </ItemStateDiv>
+              <ActiveDiv onClick={(e) => handleStatus('ONGOING', e)}>
+                거래활성화
+              </ActiveDiv>
+            </>
+          )}
+
+          <CorrectionDiv onClick={(e)=>{editPost(e,'USEDITEM')}}>
+            게시물 수정
+          </CorrectionDiv>
+          <DeleteDiv onClick={handleDelete}>
+            삭제
+          </DeleteDiv>
+        </UtilDiv>
+        <CloseDiv>
+          <Close onClick={onClose}>취소</Close>
+        </CloseDiv>
+        </>
+       )}
       </Content>
     </Panel>
   );
@@ -81,12 +163,14 @@ const Content = styled.div`
   padding: 20px;
   text-align: center;
 `;
-const UtilDiv=styled.div`
+const UtilDiv = styled.div`
   background-color: #2C2C2E;
-  height: 230px;
+  height: ${({ isAuction }) => (isAuction ? '113px' : '230px')};
   border-radius: 16px;
+  border-top-left-radius:16px;
+  border-top-right-radius:16px;
 
-`
+`;
 const ItemStateDiv=styled.div`
   background-color: #2C2C2E;
   width: 100%;
@@ -123,6 +207,8 @@ const CorrectionDiv=styled.div`
   justify-content: center;
   color:#007AFF;
   font-size: 20px;
+  border-top-left-radius:${({ isAuction }) => (isAuction ?  0:'16px' )};
+  border-top-right-radius:${({ isAuction }) => (isAuction ?  0:'16px')};
 
 `
 const DeleteDiv=styled.div`
@@ -160,3 +246,15 @@ const Close = styled.div`
   background-color: #2C2C2E;
   font-size: 20px;
 `;
+
+const ActiveDiv=styled.div`
+  background-color: #2C2C2E;
+  border-bottom: solid 1px #4A4A4A;
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items:center;
+  justify-content: center;
+  color:#007AFF;
+  font-size: 20px;
+`

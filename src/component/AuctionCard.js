@@ -5,11 +5,11 @@ import {ReactComponent as TimeIcon} from '../asset/svgs/Time.svg'
 import { useNavigate } from 'react-router-dom'
 import formatNumber from '../util/formatNumber';
 import { Timer } from '../util/timer';
-
+import LikedIcon from './icons/LikedIcon'
 
 const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
 
-function AuctionCard({item,imgName  }) {
+function AuctionCard({item,imgName ,myPoint }) {
 
     const price=100000
     const navigate = useNavigate();
@@ -19,6 +19,7 @@ function AuctionCard({item,imgName  }) {
         state:{
         startPrice:item.startPrice,
         id:item.auctionItemId,
+        myPoint:myPoint,
         }
       }); // 
     }
@@ -33,9 +34,14 @@ function AuctionCard({item,imgName  }) {
                 <span style={{fontFamily:'NeoM,sans-serif',fontSize:'16px'}}>{item.title}</span>
                 
                 <ParticipantsBox>
-                    <ExSpan>108명 참여중</ExSpan>
+                    <ExSpan>{`${item.participantCount}명 참여중`}</ExSpan>
                 </ParticipantsBox>
-                <HeartIcon/>
+                <LikedIcon 
+                itemId={item.auctionItemId}
+                itemType={'AUCTIONITEM'}
+                
+                initialLiked={item.isLike}
+                />
             </StatusBox>
            
             <PriceDiv>

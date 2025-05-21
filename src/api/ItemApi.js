@@ -204,7 +204,7 @@ export const getMyitem = async (cursors,state) => {
     try {
         const res = await api({
             method: "get",
-            url: `/api/my/useditems`,
+            url: `/api/my/store/useditems`,
             withCredentials: true,
             params:{
                 cursor:cursors,
@@ -224,7 +224,7 @@ export const getMyAuc = async (cursors) => {
     try {
         const res = await api({
             method: "get",
-            url: `/api/my/auctionitems`,
+            url: `/api/my/store/auctionitems`,
             withCredentials: true,
             params:{
                 cursor:cursors,     
@@ -235,6 +235,7 @@ export const getMyAuc = async (cursors) => {
     } catch (err) {
         console.error("fail", err);
         throw err;
+        
     }
 };
 
@@ -276,7 +277,7 @@ export const editUsed = async (usedItemId,state) => {
     try {
         const res = await api({
             method: "patch",
-            url: `/api/useditems/${usedItemId}`,
+            url: `/api/my/store/useditems/${usedItemId}`,
             withCredentials: true,
             params:{
                 transactionStatus:state
@@ -294,7 +295,7 @@ export const deleteUsed = async (usedItemId) => {
     try {
         const res = await api({
             method: "delete",
-            url: `/api/useditems/${usedItemId}`,
+            url: `/api/my/store/useditems/${usedItemId}`,
             withCredentials: true,
               
         });
@@ -310,7 +311,7 @@ export const deleteAuc = async (usedItemId) => {
     try {
         const res = await api({
             method: "delete",
-            url: `/api/auctionitems/${usedItemId}`,
+            url: `/api/my/store/auctionitems/${usedItemId}`,
             withCredentials: true,
               
         });
@@ -319,5 +320,121 @@ export const deleteAuc = async (usedItemId) => {
     } catch (err) {
         console.error("fail", err);
         throw err;
+    }
+};
+
+export const getWhoitem = async (cursors,state,id) => {
+    try {
+        const res = await api({
+            method: "get",
+            url: `/api/members/${id}/store/useditems`,
+            withCredentials: true,
+            params:{
+                cursor:cursors,
+                condition:state
+            }
+           
+        });
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+    }
+};
+
+export const getWhoAuc = async (cursors,id) => {
+    try {
+        const res = await api({
+            method: "get",
+            url: `/api/members/${id}/store/auctionitems`,
+            withCredentials: true,
+            params:{
+                cursor:cursors,     
+            }    
+        });
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+        
+    }
+};
+
+export const postLiked = async (id,type) => {
+    try {
+        const res = await api({
+            method: "post",
+            url: `/api/likes/${id}`,
+            withCredentials: true,
+            params:{
+                itemType:type,     
+            }    
+        });
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+        
+    }
+};
+
+export const getLikeItem= async (cursors) => {
+    try {
+        const res = await api({
+            method: "get",
+            url: `/api/likes/my`,
+            withCredentials: true,
+            params:{
+                cursor:cursors,     
+            }  
+        })
+           
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+        
+    }
+};
+
+export const editUsedPost= async (id,dataForm) => {
+    try {
+        const res = await api({
+            method: "put",
+            url: `/api/my/store/useditems/${id}`,
+            withCredentials: true,
+            data:dataForm
+        })
+           
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+        
+    }
+};
+
+export const editAucPost= async (id,dataForm) => {
+    try {
+        const res = await api({
+            method: "put",
+            url: `/api/my/store/auctionitems/${id}`,
+            withCredentials: true,
+            data:dataForm
+
+           
+        })
+           
+
+        return res.data;
+    } catch (err) {
+        console.error("fail", err);
+        throw err;
+        
     }
 };

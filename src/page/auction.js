@@ -72,21 +72,22 @@ function Auction() {
  
 
   const fetchItems = async () => {
-      if (isFetching) return;
-      setIsFetching(true);
-      try {
-        const data = await getAuctionItem(cursor);
-        if (data && Array.isArray(data.content)) {
-          setCursor(data.cursor);
-          if (!data.hasNext) setIsLast(true);
-          setItems((prevItems) => [...prevItems, ...data.content]);
-        }
-      } catch (err) {
-        console.error("아이템 요청 실패", err);
-      } finally {
-        setIsFetching(false);
+  if (isFetching) return;
+  setIsFetching(true);
+  try {
+    const data = await getAuctionItem(cursor);
+     if (data && Array.isArray(data.content)) {
+        setCursor(data.cursor);
+        if (!data.hasNext) setIsLast(true);
+        setItems((prevItems) => [...prevItems, ...data.content]);
       }
-    };
+  } catch (err) {
+    console.error("아이템 요청 실패", err);
+  } finally {
+    setIsFetching(false);
+  }
+};
+
   
 
   const setModal=useCallback(()=>{
@@ -118,7 +119,7 @@ function Auction() {
                     !selectedIcon || selectedIcon.length === 0 || selectedIcon.includes(item.category)
                   )
                   .map(item => (
-                    <AuctionCard key={item.id} item={item} imgName={item.imageName} />
+                    <AuctionCard key={item.id} myPoint={userInfo.point} item={item} imgName={item.imageName} />
                   ))
               ) : (
                 <p>아이템이 없습니다.</p>

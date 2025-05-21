@@ -30,8 +30,7 @@ import SearchResult from './page/SearchResult';
 import SearchResAuc from './page/SearchResAuc'
 import DetailParcel from './page/DetailParcel'
 import { refreshAccessToken } from './api/authApi';
-import userStore from './store/userStore';
-
+import EditPage from './page/EditPage';
 
 function App() {
   const location = useLocation();
@@ -94,7 +93,7 @@ function App() {
         <Route path="/mypage" element={<MyPage/>} />
         <Route path="/chat" element={<ChatPage/>} />
         <Route path="/register" element={<RegisterPage/>} />
-        <Route path="/whostore/*" element={<WhoStore/>} />
+        <Route path="/whostore/:storeType" element={<WhoStore />} />
         <Route path="/transhistory" element={<TransHistory/>} />
         <Route path="/watchlist" element={<WatchList/>} />
         <Route path="/profilesetting" element={<ProfileSetting/>} />
@@ -108,6 +107,7 @@ function App() {
         <Route path="/SearchResult" element={<SearchResult/>} />
         <Route path="/SearchResAuc" element={<SearchResAuc/>} />
         <Route path="/DetailParcel/:id" element={<DetailParcel/>} />
+        <Route path="/EditPage" element={<EditPage/>} />
        </Routes>
 
     </div>

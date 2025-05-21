@@ -14,6 +14,7 @@ import SearchIcon from "../component/icons/SearchIcon";
 import {searchApi} from "../api/ItemApi"
 import { useInView } from "react-intersection-observer";
 import userStore from '../store/userStore'
+import LikedIcon from "../component/icons/LikedIcon";
 
 function SearchResult() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -38,23 +39,33 @@ function SearchResult() {
   const appMainRef = useRef(null);
 
   const fetchSearchResults = async () => {
-    if (!query) return;
-    setIsFetching(true);
-    try {
-      const data = await searchApi(query,cursor); // 응답 형식이 { content, cursor, hasNext } 라고 가정
-      if (data && Array.isArray(data.content)) {
-        setItems(data.content);         // 기존 아이템 대체
-        setCursor(data.cursor || null); // 커서 저장 (다음 요청 위해)
-        setIsLast(!data.hasNext);       // 다음 페이지 없음 여부 판단
-      }
-    } catch (err) {
-      console.error("검색 결과 불러오기 실패", err);
-    } finally {
-      setIsFetching(false);
-      setIsInitialLoad(false); // 이후 요청은 스크롤에 의한 것
+  if (!query || isLast || isFetching) return;
+  setIsFetching(true);
 
+  try {
+    const data = await searchApi(query, cursor); // { content, cursor, hasNext } 형식 예상
+
+    if (data && Array.isArray(data.content)) {
+      // ✅ 최초 요청이면 새로 세팅, 이후에는 추가로 붙이기
+      setItems((prev) => isInitialLoad ? data.content : [...prev, ...data.content]);
+      setCursor(data.cursor || null);
+
+      // ✅ hasNext가 false거나 content가 비어있으면 isLast 설정
+      if (!data.hasNext || data.content.length === 0) {
+        setIsLast(true);
+      }
+    } else {
+      // 예외 처리용: content가 없거나 이상한 형식일 경우
+      setIsLast(true);
     }
-  };
+  } catch (err) {
+    console.error("검색 결과 불러오기 실패", err);
+  } finally {
+    setIsFetching(false);
+    setIsInitialLoad(false);
+  }
+};
+
   useEffect(() => {
     setIsInitialLoad(true); // 새로운 검색어면 초기 상태
     fetchSearchResults();

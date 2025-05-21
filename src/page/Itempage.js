@@ -1,12 +1,9 @@
 import React,{useEffect, useState} from 'react'
-import { useParams,useNavigate } from 'react-router-dom';
+import { useParams,useNavigate,useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import Footer from '../component/Footer'
-import eximg0 from '../asset/image/샌즈.jpg'
-import {ReactComponent as Selling} from "../asset/svgs/sellingInpage.svg"
+import eximg0 from '../asset/image/defaultImg.png'
 import {ReactComponent as Time} from "../asset/svgs/Time.svg"
 import {ReactComponent as Eye} from "../asset/svgs/eye.svg"
-import {ReactComponent as Heart} from "../asset/svgs/pagesmallht.svg"
 import {ReactComponent as Ht} from '../asset/svgs/AuctionHeart.svg'
 import {ReactComponent as Chat} from "../asset/svgs/Chat_alt_2 (1).svg"
 import BackIcon from '../component/icons/BackIcon';
@@ -18,6 +15,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {ReactComponent as Report} from "../asset/svgs/Report.svg"
 import { createRoom } from '../api/chatApi';
+import LikedIcon from '../component/icons/LikedIcon';
 
 
 import 'swiper/css';
@@ -27,16 +25,19 @@ import Modal from 'react-modal';
 const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
 
 function Itempage() {
+  const location = useLocation();
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [items,setItems]=useState(null);
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
   const { id } = useParams();
   const navigate = useNavigate();
+  const { initialCounts,isLiked} = location.state || {};
 
 
   useEffect(() => {
     fetchItem();
+    console.log("ㅇㄴㅇ",initialCounts)
     
   }, [id]);
 
@@ -87,7 +88,26 @@ function Itempage() {
     }
   };
   
+  const navStore = () => {
+    if(items.isOwned===false){
+      navigate('/whostore/otherstore', {
+      state: {
+        profileImg: items.profile,
+        who:items.marketNickname,
+        id:items.marketMemberId
+        }
+      });
+    }else{
 
+      navigate('/whostore/mystore', {
+      state: {
+        profileImg: items.profile,
+        who:'나'
+        }
+      });
+    }
+    
+};
   if (loading) {
     return <div>로딩 중...</div>; // 로딩 페이지 표시
   }
@@ -135,9 +155,9 @@ function Itempage() {
             <Price>{(items.price).toLocaleString()}원</Price>
           
           </PriceBox>
-          <StoreBox>
+          <StoreBox onClick={navStore}>
             <ProfileBox>
-              <Profile src={eximg0} alt=""/>
+              <Profile src={items.profileImageName?`${IMG_URL}/${items.profileImageName}`:eximg0} alt=""/>
             </ProfileBox>
             <StoreName>{items.marketNickname}의 상점</StoreName>
            
@@ -146,7 +166,12 @@ function Itempage() {
         <DescriptBox>{items.content}</DescriptBox>
       </PageMain>
       <DealDiv>
-        <Liked><HtIcon/>{items.likeCount}</Liked>
+        <Liked><LikedIcon
+        itemId={id}
+        itemType={'USEDITEM'}
+        initialLiked={isLiked}
+        initialCount={initialCounts}
+        /></Liked>
         <DealButton
           disabled={items?.isOwned ||items.transactionStatus==='RESERVE'}
           onClick={() => createRoomEvent(id,items.marketMemberId)}
@@ -344,7 +369,6 @@ const StoreBox=styled.div`
 
 `
 const ProfileBox=styled.div`
-  background-color: #F4F4F4;
   width: 54px ;
   height: 54px; 
   border-radius: 50%; 
@@ -452,7 +476,8 @@ const HtIcon = styled(Ht)`
 const IconDiv=styled.div`
   width: 100%;
   display: flex;
-  gap: 2px;
+  gap: 5px;
+
 `
 const TransactionType= styled.div`
   width: 59px;
@@ -468,7 +493,7 @@ const TransactionType= styled.div`
   border-radius: 4px;
 `
 const Category= styled.div`
-  width: 48px;
+  width: 59px;
   height: 24px;
   background-color: #444448;
   font-family: 'NeoM',sans-serif;

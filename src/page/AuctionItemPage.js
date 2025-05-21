@@ -2,7 +2,7 @@ import React,{useState,useCallback,useEffect,useRef} from 'react'
 import { useParams,useNavigate,useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import Footer from '../component/Footer'
-import eximg0 from '../asset/image/샌즈.jpg'
+import eximg0 from '../asset/image/defaultImg.png'
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import {ReactComponent as Selling} from "../asset/svgs/sellingInpage.svg"
 import {ReactComponent as Heart} from "../asset/svgs/pagesmallht.svg"
@@ -216,7 +216,7 @@ function Itempage() {
                     
                     <StoreBox>
                       <ProfileBox>
-                        <Profile src={eximg0} alt=""/>
+                        <Profile src={items.profileImageName?`${IMG_URL}/${items.profileImageName}`:eximg0} alt=""/>
                       </ProfileBox>
                       <StoreName>{items.marketNickname}의 상점</StoreName>
                     
@@ -286,6 +286,8 @@ function Itempage() {
             <AuctionModal isOpen={isOpen} close={setModal}
             id={id}
             stompClient={stompClient}
+            bidprice={items.bidPrice}
+            myPoint={items.point}
             />
             
         </PageStyle>
@@ -442,7 +444,6 @@ const StoreBox=styled.div`
 
 `
 const ProfileBox=styled.div`
-  background-color: #F4F4F4;
   width: 54px ;
   height: 54px; 
   border-radius: 50%; 
@@ -619,7 +620,7 @@ const ModalImg=styled.img`
 const IconDiv=styled.div`
   width: 100%;
   display: flex;
-  gap: 2px;
+  gap: 5px;
 `
 const TransactionType= styled.div`
   width: 59px;
@@ -635,7 +636,7 @@ const TransactionType= styled.div`
   border-radius: 4px;
 `
 const Category= styled.div`
-  width: 48px;
+  width: 59px;
   height: 24px;
   background-color: #444448;
   font-family: 'NeoM',sans-serif;

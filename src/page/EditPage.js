@@ -8,39 +8,77 @@ import Footer from '../component/Footer';
 import {ReactComponent as Registerimg} from "../asset/svgs/Register_img.svg"
 import {ReactComponent as Rightarrow} from "../asset/svgs/Rightarrow.svg"
 import TypeButton from '../component/TypeButton';
-import {registerApi,postImg,s3Img,editUsedPost,editAucPost,getSpecUsedItem,getSpecAucItem} from "../api/ItemApi"
-import { deleteDatabase,saveFormToDB,getFormFromDB } from '../util/imageTemp';
+import {postImg,s3Img,editUsedPost,editAucPost,getSpecUsedItem,getSpecAucItem} from "../api/ItemApi"
 import CategoryModal from '../component/CategoryModal'
-import TempModal from '../component/TempModal';
 
+const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
+
+//바꾼 내용 일단 겟해서 폼데이터에 맞게 넣는거함
+// 경매는 가격수정불가 , 이미지 미리보기 넣는거 함
+// 미리보기삭제및 추가 로직 바꿈 , 미리보기 랜더링 방법 바꿈
+// 추가로 할것은 포스트할 삭제img배열 새img배열 썸넬img s3보내고 하는작업및
+// 최종 폼제출에 넣는 로직 수정해야함 제출 api말고 에딧api적용도 필요
+//이미지제거하고하면왜안되는가?
 function RegisterPage() {
   const navigate = useNavigate();
   const [selectedImages, setSelectedImages] = useState([]); 
   const [imagesToUpload, setImagesToUpload] = useState([]); 
   const thumbnailInput = useRef();
-
+  const [isAuctionReadOnly, setIsAuctionReadOnly] = useState(false);
   const location = useLocation();
   const { itemType, itemsId } = location.state || {};
 
-   useEffect(() => {
-    // 둘 다 존재할 때만 실행
-    if (itemType && itemsId) {
-      const fetchData = async () => {
-        try {
-          if(itemType==='AUCTION'){
-          await getSpecAucItem( itemsId); }
-          else{
-            await getSpecUsedItem( itemsId);
-          }
-        } catch (err) {
-          console.error("특정 아이템 가져오기 실패", err);
+  useEffect(() => {
+  if (itemType && itemsId) {
+    const fetchData = async () => {
+      try {
+        if (itemType === 'AUCTION') {
+          const res = await getSpecAucItem(itemsId);
+          setSelectedImages(res.imageNameList.map(name => ({
+            src: `${IMG_URL}/${name}`,
+            fromServer: true,
+            name,
+            })));
+          setFormData(prev => ({
+            ...prev,
+            title: res.title,
+            category: res.category,
+            content: res.content,
+            startPrice: res.startPrice,
+            bidPrice: res.bidPrice,
+            transactionType: res.transactionType,
+            transactionMode:'AUCTION'
+          }));
+          setIsAuctionReadOnly(true); // startPrice, bidPrice 잠금
+         
+        } else {
+          const res = await getSpecUsedItem(itemsId);
+          setSelectedImages(res.imageNames.map(name => ({
+            src: `${IMG_URL}/${name}`,
+            fromServer: true,
+            name,
+            })));
+          setFormData(prev => ({
+            ...prev,
+            title: res.title,
+            category: res.category,
+            content: res.content,
+            price: res.price,
+            transactionType: res.transactionType,
+            transactionMode: res.transactionMode,
+          }));
+          setIsAuctionReadOnly(false);
+         
         }
-      };
+      } catch (err) {
+        console.error("특정 아이템 가져오기 실패", err);
+      }
+    };
 
-      fetchData();
-    }
-  }, [itemType, itemsId]);
-//이미지가 문제네
+    fetchData();
+  }
+}, [itemType, itemsId]);
+
 
   const [formData, setFormData] = useState({
     title: '',
@@ -52,6 +90,9 @@ function RegisterPage() {
     transactionType: '',
     transactionMode: '',
     imageNames:[],
+    addImageNames:[],
+    removeImageNames:[],
+    thumbnailImage:''
   });
 
   const selectButton = (category) => {
@@ -69,91 +110,62 @@ function RegisterPage() {
   };
 
   const [isOpen,setIsOpen]=useState(false); //카테고리모달
-  const [isOpenTemp,setIsOpenTemp]=useState(false); //임시저장모달
 
   const setModal=useCallback(()=>{
     setIsOpen((prev)=>!prev);
   },[])
 
-  const setTempModal=useCallback(()=>{
-    setIsOpenTemp((prev)=>!prev);
-  },[])
-
-  const isFormFilled = Object.values(formData).every(value => value !== "" && value !== null);
-  const hasImages = imagesToUpload.length > 0;
 
 
-  const loadTempData = () => {
-    getFormFromDB().then((data) => {
-      if (data) {
-        setFormData(data.formData);
-        setSelectedImages(data.images.map((img) => img.dataURL));
-        setImagesToUpload(
-          data.images
-            .filter((img) => {
-              const allowedExtensions = ["jpg", "jpeg", "png"];
-              const extension = img.name.split(".").pop().toLowerCase();
-              return allowedExtensions.includes(extension);
-            })
-            .map((img) => {
-              const mimeType = img.name.endsWith("jpeg") || img.name.endsWith("jpg")
-                ? "image/jpeg"
-                : "image/png";
 
-              const base64Data = img.dataURL.split(",")[1];
-              const byteCharacters = atob(base64Data);
-              const byteArrays = [];
+  const imageDelete = (index) => {
+  setSelectedImages((prev) => {
+    const imageToDelete = prev[index];
+    
+    // 서버에서 온 이미지라면 삭제 리스트에 추가
+    if (imageToDelete.fromServer) {
+      setFormData((form) => ({
+        ...form,
+        removeImageNames: [...form.removeImageNames, imageToDelete.name],
+      }));
+    } else {
+      // 새로 업로드한 이미지면 imagesToUpload에서도 제거
+      setImagesToUpload((prevUpload) =>
+        prevUpload.filter((_, i) => i !== prev.filter(img => !img.fromServer).findIndex((img, j) => j === index))
+      );
+    }
 
-              for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
-                const byteArray = new Uint8Array(Math.min(1024, byteCharacters.length - offset));
-                for (let i = 0; i < byteArray.length; i++) {
-                  byteArray[i] = byteCharacters.charCodeAt(offset + i);
-                }
-                byteArrays.push(byteArray);
-              }
-
-              const blob = new Blob(byteArrays, { type: mimeType });
-              const file = new File([blob], img.name, { type: mimeType });
-
-              return file;
-            })
-        );
-      }
-      else {
-        // 데이터가 없을 때
-        alert("불러올 게 없습니다");
-      }
-    });
-  };
+    // 최종적으로 selectedImages에서 제거
+    return prev.filter((_, i) => i !== index);
+  });
+};
 
 
-  const imageDelete = (index)=>{
-    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
-    setImagesToUpload((prev) => prev.filter((_, i) => i !== index));
 
-  }
-
-  const handleSave = async () => {
-    await saveFormToDB(formData, imagesToUpload);
-    alert("폼 데이터와 이미지가 임시 저장되었습니다.");
-  };
 
   const handleImageChange = (e) => {
-    const files = e.target.files;
-    for (let file of files) {
-      const fileType = file.type;
-      if (!['image/jpeg', 'image/png','image/jpg'].includes(fileType)) {
-        alert('허용되지 않는 파일 형식입니다.');
-        return;
-      }
-      // 이미지 처리 로직 계속
+  const files = e.target.files;
+  const fileArray = Array.from(files);
+  const newImages = [];
+
+  for (let file of fileArray) {
+    const fileType = file.type;
+    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(fileType)) {
+      alert('허용되지 않는 파일 형식입니다.');
+      return;
     }
-    const fileArray = Array.from(files); 
-    const imageUrls = fileArray.map((file) => URL.createObjectURL(file)); // 각 파일의 미리보기 URL 생성
-    setImagesToUpload((prevFiles) => [...prevFiles, ...fileArray]);
-    setSelectedImages((prevImages) => [...prevImages, ...imageUrls]);
-    
-  };
+    // 새 이미지 객체를 생성해서 배열에 추가
+    newImages.push({
+      src: URL.createObjectURL(file),
+      fromServer: false,
+      name: file.name,
+      file,  // 혹시 업로드 용도로 원본 파일도 저장해두고 싶으면
+    });
+  }
+
+  setImagesToUpload((prevFiles) => [...prevFiles, ...fileArray]);
+  setSelectedImages((prevImages) => [...prevImages, ...newImages]);
+};
 
   const handleIconClick = () => {
     thumbnailInput.current.click(); 
@@ -199,78 +211,88 @@ const handleKind = useCallback((val) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    if (!isFormValid()) {
-      alert("폼을 모두 채워주세요!");
-      return;
-    }
-  
-    try {
-      // Step 1: 이미지 S3 업로드 (리스트 형태로 전달)
-      const imageNames = imagesToUpload.map(img => img.name);
-     
-    
-      const uploadedImageUrls = await postImg('useditem', imageNames); 
+  e.preventDefault();
 
+  if (!isFormValid()) {
+    alert("폼을 모두 채워주세요!");
+    return;
+  }
 
-      const imageNames2 = uploadedImageUrls.map(uploadedImageUrls => uploadedImageUrls.imageName); //서버에서준이름
-    
-      // 업로드된 이미지와 원본 파일을 매칭하여 `s3Img` 호출
-      uploadedImageUrls.forEach(({  presignedURL }, index) => {
-        // 원본 파일 (imagesToUpload에서 인덱스로 가져오기)
+  try {
+    // 1. 새 이미지가 있다면 업로드를 먼저 처리
+    if (imagesToUpload.length > 0) {
+      const imageNames = imagesToUpload.map((img) => img.name);
+      const uploadedImageUrls = await postImg("useditem", imageNames);
+
+      const newImageNames = uploadedImageUrls.map((uploaded) => uploaded.imageName);
+      formData.addImageNames = newImageNames;
+
+      uploadedImageUrls.forEach(({ presignedURL }, index) => {
         const file = imagesToUpload[index];
-    
-        // 파일명 추출 (S3 경로에서 마지막 `/` 이후 문자열)
-       
-        // 확장자 추출 (마지막 `.` 이후 문자열)
-        const fileType = file.type.split('.').pop(); 
-        //타입이 jpg jpeg png아니면 튕기는기능 넣기
-    
-        // s3Img 함수 호출
-        s3Img(presignedURL, fileType, file); //현재 콜스에러뜨는중
+        const fileType = file.type.split("/").pop();
+
+        if (!["jpg", "jpeg", "png"].includes(fileType)) {
+          throw new Error("지원하지 않는 이미지 형식입니다.");
+        }
+
+        s3Img(presignedURL, fileType, file);
       });
-    
-      const dataToSend =
-        formData.transactionMode === 'AUCTION'
-          ? {
-              title: formData.title,
-              category: formData.category,
-              content: formData.content,
-              startPrice: formData.price,
-              bidPrice: formData.bidPrice,
-              transactionType: formData.transactionType,
-              imageNames: imageNames2,
-            }
-          : {
-              title: formData.title,
-              category: formData.category,
-              content: formData.content,
-              price: formData.price,
-              transactionType: formData.transactionType,
-              transactionMode: formData.transactionMode,
-              imageNames: imageNames2,
-            };
-
-
-      // 타입에 따라 적절한 registerApi 호출
-      if (formData.transactionMode === 'AUCTION') {
-        await registerApi('auctionitems',dataToSend);
-      } else {
-        await registerApi('useditems',dataToSend);
-      }
-     
-    
-    
-     
-      alert("상품이 성공적으로 등록되었습니다!");
-      navigate('/home')
-    } catch (err) {
-      console.error("등록 실패", err);
-      alert("등록 중 오류가 발생했습니다.");
     }
-    
-    };
+
+    // 2. 썸네일 이미지 설정
+    if (formData.addImageNames && formData.addImageNames.length > 0) {
+      formData.thumbnailImage = formData.addImageNames[0]; // addImageNames는 이미 문자열 배열이니까 그대로 사용
+    } else if (selectedImages.length > 0) {
+      // selectedImages는 객체 배열이라 name만 뽑아서 넣어줌
+      formData.thumbnailImage = selectedImages[0].name;
+    }
+
+
+    // 3. 전송할 데이터 구성
+    const dataToSend =
+      formData.transactionMode === "AUCTION"
+        ? {
+            title: formData.title,
+            category: formData.category,
+            content: formData.content,
+            startPrice: formData.price,
+            bidPrice: formData.bidPrice,
+            transactionType: formData.transactionType,
+            addImageNames: formData.addImageNames,
+            removeImageNames: formData.removeImageNames,
+            thumbnailImage: formData.thumbnailImage,
+          }
+        : {
+            title: formData.title,
+            category: formData.category,
+            content: formData.content,
+            price: formData.price,
+            transactionType: formData.transactionType,
+            transactionMode: formData.transactionMode,
+            addImageNames: formData.addImageNames,
+            removeImageNames: formData.removeImageNames,
+            thumbnailImage: formData.thumbnailImage,
+          };
+
+    // 4. API 호출
+    if (formData.transactionMode === "AUCTION") {
+      let res=await editAucPost(itemsId, dataToSend);
+      console.log(res)
+    } else {
+       let res=await editUsedPost(itemsId, dataToSend);
+             console.log(res)
+
+    }
+
+    alert("상품이 성공적으로 수정되었습니다!");
+    navigate("/home");
+  } catch (err) {
+    console.error("수정 실패", err);
+    alert("수정 중 오류가 발생했습니다.");
+  }
+};
+
+
     const isFormValid = () => {
       const {
         title,
@@ -281,19 +303,21 @@ const handleKind = useCallback((val) => {
         bidPrice,
         transactionType,
         transactionMode,
+        
       } = formData;
-
+      if (selectedImages.length === 0) return false;
+      
       if (!title || !category || !content ||!transactionType) return false;
 
       if (transactionMode === 'BUY') {
-        return price && hasImages
+        return price 
       }
       if (transactionMode === 'SELL') {
-        return price && hasImages
+        return price 
       }
 
       if (transactionMode === 'AUCTION') {
-        return price && bidPrice && hasImages;
+        return startPrice && bidPrice
       }
       
 
@@ -308,8 +332,8 @@ const handleKind = useCallback((val) => {
             <HeaderIcons>
               <HeaderLeft><CancleIcon onClick={back} /></HeaderLeft>
             </HeaderIcons>
-            <HeaderTitle>상품 등록하기</HeaderTitle>
-            <Temp onClick={setTempModal} >불러오기</Temp>
+            <HeaderTitle>수정하기</HeaderTitle>
+            <Temp></Temp>
           </HeaderContent>
         </HeaderBox>
         <AppMain>
@@ -324,15 +348,13 @@ const handleKind = useCallback((val) => {
               style={{ display: 'none' }} 
             />
          <ThumbnailWrapper>
-          {selectedImages.map((image, index) => (
-            <ThumbnailContainer key={index}>
-              <ThumbnailImage src={image} alt={`thumbnail-${index}`} />
-              
-              <ThumbnailCancle onClick={()=>imageDelete(index)} />
-             
-            </ThumbnailContainer>
-          ))}
-        </ThumbnailWrapper>
+            {selectedImages.map((image, index) => (
+                <ThumbnailContainer key={index}>
+                <ThumbnailImage src={image.src} alt={`thumbnail-${index}`} />
+                <ThumbnailCancle onClick={() => imageDelete(index)} />
+                </ThumbnailContainer>
+            ))}
+            </ThumbnailWrapper>
         
           </ImgDiv>
 
@@ -344,22 +366,26 @@ const handleKind = useCallback((val) => {
           <TradeTypeDiv>
             거래 유형
             <TypeStateDiv>
-             
+             {itemType === 'AUCTION' ? (
                 <TypeButton
-                  children={"판매하기"}
-                  isSelected={formData.transactionMode === ("SELL")}
-                  onClick={() => handleType("SELL")}
-                />     
+                    children={"경매하기"}
+                    isSelected={formData.transactionMode === "AUCTION"}
+                    onClick={() => handleType("AUCTION")}
+                />
+                ) : (
+                <>
                     <TypeButton
-                  children={"구매하기"}
-                  isSelected={formData.transactionMode === ("BUY")}
-                  onClick={() => handleType("BUY")}
-                />   
+                    children={"판매하기"}
+                    isSelected={formData.transactionMode === "SELL"}
+                    onClick={() => handleType("SELL")}
+                    />
                     <TypeButton
-                  children={"경매하기"}
-                  isSelected={formData.transactionMode === ("AUCTION")}
-                  onClick={() => handleType("AUCTION")}
-                />   
+                    children={"구매하기"}
+                    isSelected={formData.transactionMode === "BUY"}
+                    onClick={() => handleType("BUY")}
+                    />
+                </>
+                )}
             </TypeStateDiv>
           </TradeTypeDiv>
 
@@ -390,20 +416,55 @@ const handleKind = useCallback((val) => {
             내용
             <TextInput  placeholder='내용을 입력해주세요.' name="content" value={formData.content} onChange={handleChange} />
           </TextDiv>
-
-          <PriceDiv>
-            가격
-            <PriceInput  placeholder='가격을 입력해주세요.' name="price" value={formData.price} onChange={handlePriceChange} />
-          </PriceDiv>
+          {formData.transactionMode !== "AUCTION" && (
+            <PriceDiv>
+                가격
+                <PriceInput
+                placeholder='가격을 입력해주세요.'
+                name="price"
+                value={formData.price}
+                onChange={handlePriceChange}
+                disabled={itemType === 'AUCTION'}
+                readOnly={isAuctionReadOnly}
+                />
+            </PriceDiv>
+            )}
 
           {formData.transactionMode === "AUCTION" && (
             <AskPriceDiv>
-              호가
-              <AskPriceInput  placeholder='호가를 입력해주세요.' name="bidPrice" value={formData.bidPrice} onChange={handleBidPriceChange} />
+                호가
+                <AskPriceInput
+                placeholder='호가를 입력해주세요.'
+                name="bidPrice"
+                value={formData.bidPrice}
+                onChange={handleBidPriceChange}
+                disabled={itemType === 'AUCTION'}
+                readOnly={isAuctionReadOnly}
+                />
             </AskPriceDiv>
-          )}
+            )}
+
+            {formData.transactionMode === "AUCTION" && (
+            <PriceDiv>
+                가격
+                <PriceInput
+                placeholder='가격을 입력해주세요.'
+                name="startprice"
+                value={formData.startPrice}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setFormData((prev) => ({
+                    ...prev,
+                    startPrice: value,
+                  }));
+                }}
+                disabled={itemType === 'AUCTION'}
+                readOnly={isAuctionReadOnly}
+                />
+            </PriceDiv>
+            )}
           <Buttons>
-            <TempSave  onClick={handleSave}>임시저장</TempSave>
+            
             <Register onClick={handleSubmit} disabled={!isFormValid()}>등록하기</Register>
           </Buttons>
         </AppMain>
@@ -411,7 +472,6 @@ const handleKind = useCallback((val) => {
             selectedIcon={formData.category}  // formData.category 사용
             selectButton={selectButton} 
             resetSelection={resetSelection} />
-        <TempModal isOpen={isOpenTemp} close={setTempModal} loadTempData={loadTempData}/>
         <Footer />
       </PageStyle>
     </CommonBox>
@@ -648,7 +708,7 @@ const AskPriceInput=styled.input`
 
 `
 const Register = styled.button`
-  width: 49%;
+  width: 100%;
   min-height: 53px;
   background-color: ${(prop)=>(prop.disabled?"#757575":"#08AC72")};
   border-radius: 4px;
@@ -697,16 +757,7 @@ const Buttons=styled.div`
   display: flex;
   gap: 10px;
 `
-const TempSave=styled.button`
-  width: 49%;
-  min-height: 53px;
-  background-color: #444448;
-  border-radius: 4px;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  
-`
+
 
 
 

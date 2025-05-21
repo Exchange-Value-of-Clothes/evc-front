@@ -64,6 +64,7 @@ function App() {
     setHistory(updated);
   };
  
+  
 
   const fetchItems = async () => {
     if (isFetching) return;
@@ -119,6 +120,9 @@ function App() {
     }
   }, [selectedFilter]);
 
+  useEffect(()=>{
+    console.log(items)
+  },[items])
   return (
     <CommonBox>
       <PageStyle>
