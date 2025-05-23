@@ -7,6 +7,7 @@ import {ReactComponent as Google} from '../asset/svgs/realgoogle.svg'
 import { useMutation,useQuery} from "@tanstack/react-query";
 import { registerApi } from "../api/authApi";
 import { RequestCodeApi } from "../api/authApi";
+import {ReactComponent as EvcbigLogo} from '../asset/svgs/Evc_bigLogo.svg'
 
 function SignUp() {
   //const navigate=useNavigate();
@@ -117,7 +118,7 @@ return (
     <PageStyle>
       <SignupContainer>
           <SignupForm onSubmit={(e) => e.preventDefault()} >
-              <SignupLogoDiv> 의가교환 </SignupLogoDiv>
+              <SignupLogoDiv> <EvcbigLogo style={{width:'90px',height:'80px'}}/>  </SignupLogoDiv>
               <span style={{fontSize:'14px',fontFamily:'NeoM,sans-serif'}}>반가워요! 회원가입을 위해 정보를 입력해주세요.</span>
               <SignupInputGroup>
                       <SignupEmailDiv>
@@ -184,11 +185,16 @@ return (
               <SignupSocialDiv>
                   <a href='http://ec2-15-164-152-88.ap-northeast-2.compute.amazonaws.com:8080/api/auth/social?provider_type=KAKAO&state=cmakc2199r21ll1z'>
 
-                  <Signupkakao/> 
+                   <Signupkakao/> 
                   </a>
-                  <Signupnaver/> 
+                  <a href='http://ec2-15-164-152-88.ap-northeast-2.compute.amazonaws.com:8080/api/auth/social?provider_type=NAVER&state=cmakc2199r21ll1z'>
+                   <Signupnaver/> 
+                   </a>
+
+                  <a href='http://ec2-15-164-152-88.ap-northeast-2.compute.amazonaws.com:8080/api/auth/social?provider_type=GOOGLE&state=cmakc2199r21ll1z'>
 
                   <Signupgoogle/> 
+                  </a>
               </SignupSocialDiv>
               <Link to={'/login'} style={{ textDecoration: "none",color:'white'}}>
                   <span style={{fontSize:'14px',fontFamily:'NeoM,sans-serif'}} >이미 계정이 있으신가요? 로그인 하러가기</span>  
@@ -237,7 +243,7 @@ const SignupForm =styled.div`
 
 `
 const SignupLogoDiv=styled.div`
-  width: 140px;
+  width: 100px;
   min-height: 100px;
   background-color:#212025;
   border-radius: 8px;
@@ -402,7 +408,7 @@ const Signupkakao=styled(Kakao)`
 const Signupnaver=styled(Naver)`
 
   border-radius: 8px;
-  width: 30%;
+  width: 100%;
   height: 100%;
   background-color:#00C73C;
 
@@ -410,7 +416,7 @@ const Signupnaver=styled(Naver)`
 const Signupgoogle=styled(Google)`
 
   border-radius: 8px;
-  width: 30%;
+  width: 100%;
   height: 100%;
   background-color: white;
 `

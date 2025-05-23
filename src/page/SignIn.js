@@ -4,10 +4,12 @@ import { Link,useNavigate } from 'react-router-dom';
 import{ReactComponent as Kakao} from '../asset/svgs/realkakao.svg'
 import {ReactComponent as Naver} from '../asset/svgs/realnaver.svg'
 import {ReactComponent as Google} from '../asset/svgs/realgoogle.svg'
+import {ReactComponent as EvcbigLogo} from '../asset/svgs/Evc_bigLogo.svg'
 import { useMutation } from "@tanstack/react-query";
 import { logInApi,socialLogin } from "../api/authApi";
 import axios from 'axios';
 import userStore from '../store/userStore'
+
 
 function SignIn() {
   const navigate=useNavigate();
@@ -58,7 +60,7 @@ function SignIn() {
         <LoginContainer>
             <LoginForm>
               <Link to={'/home'} style={{ textDecoration: "none",color:'white'}}>
-                <LogoDiv> 의가교환 </LogoDiv>
+                <LogoDiv> <EvcbigLogo style={{width:'90px',height:'80px'}}/>  </LogoDiv>
               </Link>
                 <span style={{fontSize:'14px',fontFamily:'NeoM,sans-serif'}}>반가워요! 로그인을 위해 이메일과 비밀번호를 입력해주세요</span>
                 <InputGroup>
@@ -95,24 +97,24 @@ function SignIn() {
                 <SocialDiv>
 
 
+                   <a href='http://ec2-15-164-152-88.ap-northeast-2.compute.amazonaws.com:8080/api/auth/social?provider_type=KAKAO&state=cmakc2199r21ll1z'> 
+                    <SignInKakao/>
                   
-                    <SignInKakao
-
-                      />
-                  
-                  
-                    {/*<a href='http://ec2-15-164-152-88.ap-northeast-2.compute.amazonaws.com:8080/api/auth/social?provider_type=NAVER&state=cmakc2199r21ll1z'>*/}
+                    </a>          
+                    <a href='http://ec2-15-164-152-88.ap-northeast-2.compute.amazonaws.com:8080/api/auth/social?provider_type=NAVER&state=cmakc2199r21ll1z'>
                     <SignInNaver
          
 
                        />
-
+                    </a>
                    
-                 
+                     <a href='http://ec2-15-164-152-88.ap-northeast-2.compute.amazonaws.com:8080/api/auth/social?provider_type=GOOGLE&state=cmakc2199r21ll1z'>
+
                     <SignInGoogle
-                      onClick={()=>socialLogin("GOOGLE")}
+                     
 
                     />
+                    </a>
                       
                 </SocialDiv>
                 <Link to={'/signup'} style={{ textDecoration: "none",color:'white'}}>
@@ -162,7 +164,7 @@ const LoginForm = styled.div`
 
 `
 const LogoDiv = styled.div`
-  width: 140px;
+  width: 100px;
   height: 100px;
   background-color:#212025;
   border-radius: 8px;
@@ -244,7 +246,7 @@ const SocialDiv =styled.div`
 const SignInKakao=styled(Kakao)`
  
   border-radius: 8px;
-  width: 30%;
+  width: 100%;
   height: 100%;
   background-color:#FEE500;
 
@@ -253,7 +255,7 @@ const SignInKakao=styled(Kakao)`
 const SignInNaver=styled(Naver)`
 
   border-radius: 8px;
-  width: 30%;
+  width: 100%;
   height: 100%;
   background-color:#00C73C;
 
@@ -262,7 +264,7 @@ const SignInNaver=styled(Naver)`
 const SignInGoogle=styled(Google)`
 
   border-radius: 8px;
-  width: 30%;
+  width: 100%;
   height: 100%;
   background-color:white;
 `
