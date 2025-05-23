@@ -576,8 +576,9 @@ const TextDiv= styled.div`
   gap: 8px;
   flex-direction:column;
 
+
 `
-const TextInput=styled.input`
+const TextInput=styled.textarea`
   width: 100%;
   min-height: 120px;
   box-sizing:border-box;
@@ -585,8 +586,8 @@ const TextInput=styled.input`
   border: none;
   background-color: #444448;
   padding: 8px;
-  
-  justify-content: flex-start;
+  resize: none; /* 크기 조절 비활성화 */
+
   &::placeholder{
     font-size: 16px;
     font-family: 'NeoSB',sans-serif;

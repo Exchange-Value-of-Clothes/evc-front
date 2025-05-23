@@ -5,8 +5,8 @@ import styled from 'styled-components';
 import {ReactComponent as BackArrow} from "../asset/svgs/Back.svg"
 import PointAddModal from './PointAddModal';
 import {sendPrice} from '../hook/useChat'
-
-const PointModal=({isOpen,close,id, stompClient,bidprice,myPoint })=> {
+// q배팅 계산해서 예외처리필요
+const PointModal=({isOpen,close,id, stompClient,bidprice,myPoint,currentPrice })=> {
     const modalRoot = document.getElementById('portal');
     const [isOpenAdd,setIsOpenAdd]=useState(false);
     const setModalAdd=useCallback(()=>{
@@ -49,11 +49,11 @@ const PointModal=({isOpen,close,id, stompClient,bidprice,myPoint })=> {
             </ModalHeader>
             <ContentDiv>
               <PointInput 
-              placeholder='입찰 금액을 입력해주세요'
+              placeholder='현재 가격이상으로 입력해주세요'
               name="addPrice" 
               value={addPrice} 
               onChange={handlePriceChange}/>
-              <Sspan> {`최소 ${bidprice}포인트 이상으로 입찰해주세요`}</Sspan>  {/*이거 호가 프롭스로넣기수정필요 */}
+              <Sspan> {`호가단위는 ${bidprice}원 입니다`}</Sspan>  {/*이거 호가 프롭스로넣기수정필요 */}
               <Sdiv>
               <CurrentPoint>현재 보유량 {myPoint.toLocaleString()}</CurrentPoint>
               </Sdiv>
@@ -63,7 +63,7 @@ const PointModal=({isOpen,close,id, stompClient,bidprice,myPoint })=> {
             <ButtonDiv>
             <Button1 onClick={setModalAdd}>포인트 충전하기</Button1>
             <Button2 onClick={handleSendPrice}
-             disabled={Number(addPrice) < Number(bidprice)}
+             disabled={Number(addPrice) < Number(currentPrice+bidprice) || myPoint < Number(addPrice)}
             >입찰하기</Button2>
               
             </ButtonDiv>

@@ -288,6 +288,7 @@ function Itempage() {
             stompClient={stompClient}
             bidprice={items.bidPrice}
             myPoint={items.point}
+            currentPrice={current}
             />
             
         </PageStyle>

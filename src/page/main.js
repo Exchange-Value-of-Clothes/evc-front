@@ -127,7 +127,7 @@ function App() {
     <CommonBox>
       <PageStyle>
         <HeaderWrapper>
-        <Header title={'홈'} leftIcon={<SearchIcon onClick={handleAddClick} />} rightIcon={<AlertIcon />} />
+        <Header title={isExpanded===true?'검색':'홈'} leftIcon={<SearchIcon onClick={handleAddClick} />} rightIcon={<AlertIcon />} />
         </HeaderWrapper>
         <Filter
           filterShape={'else'}

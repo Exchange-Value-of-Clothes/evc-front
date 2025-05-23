@@ -106,7 +106,7 @@ function Auction() {
     <CommonBox>
         <PageStyle>
           <HeaderWrapper>
-            <Header title={'홈'} leftIcon={<SearchIcon onClick={handleAddClick2}/>} rightIcon={<AlertIcon/>}/>
+            <Header title={isExpanded===true?'검색':'홈'} leftIcon={<SearchIcon onClick={handleAddClick2}/>} rightIcon={<AlertIcon/>}/>
           </HeaderWrapper>  
             <PageFilter>
                 <FilterDiv onClick={setModal}><Filter/>필터</FilterDiv> {/**현재는 아이템종류안와서 안오면 폐기*/}

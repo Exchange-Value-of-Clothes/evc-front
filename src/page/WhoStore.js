@@ -158,6 +158,13 @@ const fetchItems = async () => {
     document.body.style.overflow = 'auto';
   };
 }, [isPanelOpen]);
+useEffect(() => {
+  // 현재 페이지 필터가 설정되어 있지 않으면 'ALL'로 설정
+  if (!selectedFilter) {
+    setFilter(currentPage, 'ALL');
+  }
+}, [currentPage, selectedFilter, setFilter]);
+
     
   return (
     <CommonBox ref={targetRef}>

@@ -219,6 +219,7 @@ const CardWrapper = styled.div`
   align-items: center;
   overflow: hidden;
   min-height: 120px;
+  width: 100%;
 `;
 
 const CardContainer = styled.div`

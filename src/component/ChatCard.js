@@ -42,21 +42,36 @@ export default ChatCard
 
 const ItemCard = styled.div`  
   box-sizing: border-box;
-  width: 100%;
   min-height: 120px;
-  
+  max-width: 100%;
   padding: 8px 16px;
   gap: 16px;
   display: flex;
   border-bottom: ${props => (props.$border?'solid 1px #4A4A4A':'none')};
+  overflow: hidden;
 `
+
 const CardImgBox = styled.div`
   min-width: 100px;
+  width: 100px;
   height: 100px;
   border-radius: 4px;
   position: relative;
-
+  flex-shrink: 0;  // 이미지 영역 고정
 `
+
+const CardTextBox = styled.div`
+  color: #F4F4F4;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  overflow: hidden; /* 텍스트 박스 오버플로우 방지 */
+  flex: 1; /* 이미지 외 영역 전체 차지 */
+  min-width: 0; /* text-overflow: ellipsis 작동을 위해 */
+`
+
 const CardImg = styled.img`
   width: 100%;
   height: 100%;
@@ -64,14 +79,7 @@ const CardImg = styled.img`
   object-fit: cover;
   
 `
-const CardTextBox = styled.div`
-  color: #F4F4F4;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-`
+
 const CardTitleDiv = styled.div`
   height: 24px;
   font-size: 16px;
@@ -82,10 +90,11 @@ const CardTitleDiv = styled.div`
   
 `
 const Title= styled.div`
+min-width: 0;
     font-size: 16px;
     font-family: 'NeoM',sans-serif;
     max-height:24px;
-    width: 100px;
+    width: 100%;
     white-space: nowrap;
     text-overflow: ellipsis; 
     overflow: hidden;
@@ -101,23 +110,24 @@ const CardUploadTime = styled.div`
 `
 
 
-
 const LastChatDiv=styled.div`
     width: 100%;
     height: 24px;
     display: flex;
     justify-content: space-between;
     align-items:center;
+   
 
 `
 const LastChat=styled.div`
     font-size: 16px;
     font-family: 'NeoEB',sans-serif;
     max-height:24px;
-    width: 100px;
+    width: 90%;
     white-space: nowrap;
     text-overflow: ellipsis; 
     overflow: hidden;
+    box-sizing: border-box;
 `
 
     

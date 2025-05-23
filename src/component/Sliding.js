@@ -23,12 +23,15 @@ const SlidingPanel = ({ isOpen, onClose, targetRef,itemId,kinds,transactionStatu
       if (kinds === 'AUCTION') {
         await deleteAuc(itemId);
         console.log(`경매 아이템 ${itemId} 삭제 완료`);
+        
       } else {
         await deleteUsed(itemId);
         console.log(`중고 아이템 ${itemId} 삭제 완료`);
       }
 
       onClose(); 
+      window.location.reload();
+
     } catch (err) {
       console.error('삭제 실패:', err);
       

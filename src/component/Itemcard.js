@@ -112,6 +112,7 @@ const CardImgBox = styled.div`
   height: 100px;
   border-radius: 4px;
   position: relative;
+  flex-shrink: 0;  // 이미지 영역 고정
 
 `
 const CardImg = styled.img`
@@ -145,6 +146,9 @@ const CardTextBox = styled.div`
   flex-direction: column;
   justify-content: center;
   gap: 5px;
+  overflow: hidden; /* 텍스트 박스 오버플로우 방지 */
+  flex: 1; /* 이미지 외 영역 전체 차지 */
+  min-width: 0; /* text-overflow: ellipsis 작동을 위해 */
 
 `
 const CardTitleDiv = styled.div`
@@ -159,8 +163,8 @@ const CardTitleDiv = styled.div`
 const Title= styled.div`
     font-size: 16px;
     font-family: 'NeoM',sans-serif;
+
     max-height:24px;
-    width: 100px;
     white-space: nowrap;
     text-overflow: ellipsis; 
     overflow: hidden;

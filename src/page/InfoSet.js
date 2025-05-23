@@ -56,6 +56,7 @@ import { searchAddress,postAddress,getAccount,postAccount } from '../api/userApi
           await postAddress(Info); 
           await postAccount(Info);    
           alert('등록이완료되었습니다!')
+          navigate('/mypage')
       } catch (err) {
           console.error("주소 등록 실패", err);
       }

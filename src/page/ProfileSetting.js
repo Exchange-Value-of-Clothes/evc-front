@@ -11,11 +11,12 @@ import useFetchUser from '../hook/useFetchUser';
 import {ReactComponent as Cancle2} from "../asset/svgs/Cancle2.svg"
 import { postImg_profile,editUser } from '../api/userApi';
 import { s3Img } from '../api/ItemApi';
+import { useNavigate } from 'react-router-dom';
 
 const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
  
 function ProfileSetting() { 
-    
+    const nav=useNavigate();
     const { userInfo, fetchUser } = useFetchUser();
     const [editData, setEditData] = useState({ 
         nickname : '',
@@ -92,6 +93,7 @@ function ProfileSetting() {
           // 여기에 최종 API 요청 함수 호출하면 됨
           
           await editUser(dataToSend.nickname,dataToSend.imageName)
+          nav('/mypage')
       
         } catch (err) {
           console.error("등록 실패", err);
