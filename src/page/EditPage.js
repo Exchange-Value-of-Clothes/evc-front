@@ -13,12 +13,7 @@ import CategoryModal from '../component/CategoryModal'
 
 const IMG_URL = process.env.REACT_APP_CLOUD_FRONT;
 
-//바꾼 내용 일단 겟해서 폼데이터에 맞게 넣는거함
-// 경매는 가격수정불가 , 이미지 미리보기 넣는거 함
-// 미리보기삭제및 추가 로직 바꿈 , 미리보기 랜더링 방법 바꿈
-// 추가로 할것은 포스트할 삭제img배열 새img배열 썸넬img s3보내고 하는작업및
-// 최종 폼제출에 넣는 로직 수정해야함 제출 api말고 에딧api적용도 필요
-//이미지제거하고하면왜안되는가?
+
 function RegisterPage() {
   const navigate = useNavigate();
   const [selectedImages, setSelectedImages] = useState([]); 
@@ -277,10 +272,10 @@ const handleKind = useCallback((val) => {
     // 4. API 호출
     if (formData.transactionMode === "AUCTION") {
       let res=await editAucPost(itemsId, dataToSend);
-      console.log(res)
+      
     } else {
        let res=await editUsedPost(itemsId, dataToSend);
-             console.log(res)
+            
 
     }
 

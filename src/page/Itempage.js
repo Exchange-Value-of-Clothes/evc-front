@@ -37,7 +37,7 @@ function Itempage() {
 
   useEffect(() => {
     fetchItem();
-    console.log("ㅇㄴㅇ",initialCounts)
+   
     
   }, [id]);
 

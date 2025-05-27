@@ -120,9 +120,7 @@ function App() {
     }
   }, [selectedFilter]);
 
-  useEffect(()=>{
-    console.log(items)
-  },[items])
+ 
   return (
     <CommonBox>
       <PageStyle>

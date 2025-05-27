@@ -47,7 +47,7 @@ function WatchList() {
 };
 
   useEffect(() => {
-      console.log("📍 inView:", inView, "isLast:", isLast, "isFetching:", isFetching);
+     
 
   if (!inView || isFetching || isLast) return;
 

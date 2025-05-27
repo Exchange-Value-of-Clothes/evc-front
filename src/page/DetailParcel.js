@@ -71,10 +71,7 @@ function ParcelFInd() {
     fetchOrder()
 
   },[])
-    useEffect(()=>{
-    console.log(data)
-
-  },[data])
+    
 
    return (
     <CommonBox>
