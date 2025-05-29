@@ -9,6 +9,9 @@ import { useMutation } from "@tanstack/react-query";
 import { logInApi,socialLogin } from "../api/authApi";
 import axios from 'axios';
 import userStore from '../store/userStore'
+import{ReactComponent as Logo} from '../asset/svgs/logo.svg'
+
+
 
 
 function SignIn() {
@@ -60,7 +63,7 @@ function SignIn() {
         <LoginContainer>
             <LoginForm>
               <Link to={'/home'} style={{ textDecoration: "none",color:'white'}}>
-                <LogoDiv> <EvcbigLogo style={{width:'90px',height:'80px'}}/>  </LogoDiv>
+             <Logo style={{width:'90px',height:'90px'}}/>  
               </Link>
                 <span style={{fontSize:'14px',fontFamily:'NeoM,sans-serif'}}>반가워요! 로그인을 위해 이메일과 비밀번호를 입력해주세요</span>
                 <InputGroup>

@@ -8,6 +8,7 @@ import { useMutation,useQuery} from "@tanstack/react-query";
 import { registerApi } from "../api/authApi";
 import { RequestCodeApi } from "../api/authApi";
 import {ReactComponent as EvcbigLogo} from '../asset/svgs/Evc_bigLogo.svg'
+import{ReactComponent as Logo} from '../asset/svgs/logo.svg'
 
 function SignUp() {
   //const navigate=useNavigate();
@@ -118,7 +119,7 @@ return (
     <PageStyle>
       <SignupContainer>
           <SignupForm onSubmit={(e) => e.preventDefault()} >
-              <SignupLogoDiv> <EvcbigLogo style={{width:'90px',height:'80px'}}/>  </SignupLogoDiv>
+               <Logo style={{width:'90px',height:'90px'}}/> 
               <span style={{fontSize:'14px',fontFamily:'NeoM,sans-serif'}}>반가워요! 회원가입을 위해 정보를 입력해주세요.</span>
               <SignupInputGroup>
                       <SignupEmailDiv>

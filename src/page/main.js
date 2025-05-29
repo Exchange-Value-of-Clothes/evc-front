@@ -90,12 +90,12 @@ function App() {
     return true;
   });
 
-  useEffect(() => {
+ /* useEffect(() => {
     const loginstate = localStorage.getItem('LoginState');
     if (!loginstate) {
       navigate("/login");
     }
-  }, [navigate]);
+  }, [navigate]);*/
 
   useEffect(() => {
     if (inView && !isLast && !isFetching) {

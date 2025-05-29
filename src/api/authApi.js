@@ -14,6 +14,8 @@ export const registerApi = async (userData) => {
         
       },
       data: userData, 
+          withCredentials: true
+
     });
 
     return response.data; 
@@ -34,6 +36,8 @@ export const logInApi = async (userData)=>{
                 "Content-Type": "application/json",
             },
             data:userData,
+                withCredentials: true
+
         });
         return res.data;
     }catch(err){
@@ -48,8 +52,11 @@ export const RequestCodeApi = async (userEmail)=>{
           method:'get',
           url: `${API_URL}/api/members/register/request-code`,
           params:{email:userEmail},
+              withCredentials: true
+
         
       });
+      
       return res.data;
   }catch(err){
       console.error("인증코드 재요청 실패",err)
@@ -91,6 +98,8 @@ export const socialLogin = async (social)=>{
             provider_type:social,
             state: RandomStr,
           } ,
+              withCredentials: true
+
       });
       return res.data;
   }catch(err){
